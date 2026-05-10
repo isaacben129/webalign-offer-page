@@ -1,19 +1,25 @@
-/* GALYON FONT — drop font files into /fonts folder
-   Update src url() paths to match your file names */
-
+/* GALYON FONT */
 @font-face {
   font-family: 'Galyon';
-  src: url('/fonts/Galyon-Black.woff2') format('woff2'),
-       url('/fonts/Galyon-Black.woff') format('woff');
-  font-weight: 900;
+  src: url('/fonts/galyon-regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
   font-display: swap;
 }
 
 @font-face {
   font-family: 'Galyon';
-  src: url('/fonts/Galyon-Bold.woff2') format('woff2'),
-       url('/fonts/Galyon-Bold.woff') format('woff');
+  src: url('/fonts/galyon-bold.otf') format('opentype');
   font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Galyon';
+  src: url('/fonts/galyon-italic.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
   font-display: swap;
 }
 
