@@ -4,11 +4,11 @@ import './index.css'
 import { useEffect } from 'react'
 
 const CTA = () => (
-  <a className="inline-flex items-center gap-3 text-sm uppercase tracking-wide text-[#1A1A1A]" href="#">
+  <a className="inline-flex items-center gap-3 text-[13px] uppercase tracking-[0.04em] text-[#1A1A1A]" href="#">
     <span>Apply For A Launch Sprint</span>
     <span
       data-ph-event="apply_cta_click"
-      className="inline-flex h-10 w-10 items-center justify-center border border-[#2D5A3D] bg-[#2D5A3D] text-lg leading-none text-[#F5F5F5]"
+      className="inline-flex h-10 w-10 items-center justify-center border border-[#2D5A3D] bg-[#2D5A3D] text-lg leading-none text-[#F5F5F5] !rounded-full"
     >
       ↗
     </span>
@@ -44,21 +44,29 @@ function App() {
 
   return (
     <main className="text-[#1A1A1A]">
-      <section className="bg-[#EFEFEF] text-[#1A1A1A] min-h-[100svh] px-5 pt-5 pb-6 md:px-10">
-        <div className="flex items-start justify-between text-[11px] uppercase tracking-[0.16em] text-[#888888]">
-          <span>Launch Sprint</span><span>© WA 2025</span><span className="text-lg leading-none">☰</span>
-        </div>
-        <div className="mt-4 border-t border-[#555555]" />
-        <div className="mt-5 max-w-5xl">
-          <h1 className="headline-font text-[#1A1A1A] leading-[0.95] text-[clamp(48px,11vw,88px)]">YOUR IDEA IS WORTHLESS UNTIL IT'S LIVE.</h1>
-          <p className="mt-3 text-sm text-[#AAAAAA]">We build your launch-ready validation funnel in 48 hours.</p>
-          <div className="mt-4 border-t border-[#555555] py-2 border-b">
-            <div className="overflow-x-auto whitespace-nowrap text-xs uppercase tracking-wide text-[#888888]">
-              {stripItems.map((item, i) => <span key={item} className="inline-flex items-center">{i > 0 && <span className="mx-3 text-[#666666]">|</span>}{item}</span>)}
-            </div>
+      <section className="bg-[#EFEFEF] text-[#1A1A1A] min-h-[100svh] pb-[clamp(48px,8vh,96px)] pt-0">
+        <div className="px-[clamp(24px,6vw,80px)] pt-5 pb-5">
+          <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.16em] text-[#888888]">
+            <span>Launch Sprint</span><span className="ml-auto mr-4 md:mr-8">1 Sprint Slot Open</span><span className="text-lg leading-none">☰</span>
           </div>
-          <div className="mt-4"><CTA /></div>
-          <p className="mt-2 text-xs text-[#888888]">Delivered in 48 hours or you pay nothing. No questions asked.</p>
+        </div>
+        <div className="w-full border-t border-[#555555]" />
+
+        <div className="px-[clamp(24px,6vw,80px)] pt-[clamp(72px,12vh,140px)]">
+          <h1 className="headline-font w-full text-[#1A1A1A] text-[clamp(52px,10vw,96px)] leading-[0.9] tracking-[-0.03em] md:w-[80%] lg:w-[60%]">YOUR IDEA IS WORTHLESS UNTIL IT'S LIVE.</h1>
+
+          <div className="mt-[clamp(40px,6vh,72px)] flex w-full flex-col gap-3 md:w-[80%] lg:w-[60%]">
+            <p className="text-[14px] text-[#888888] md:whitespace-nowrap">We build your launch-ready validation funnel in 48 hours.</p>
+
+            <div className="w-screen border-y border-[#555555] relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] py-2">
+              <div className="overflow-x-auto whitespace-nowrap text-[12px] uppercase tracking-[0.04em] text-[#888888] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                {stripItems.map((item, i) => <span key={item} className="inline-flex shrink-0 items-center">{i > 0 && <span className="mx-3 text-[#666666]">|</span>}{item}</span>)}
+              </div>
+            </div>
+
+            <div><CTA /></div>
+            <p className="mt-[10px] text-[12px] text-[#888888]">Delivered in 48 hours or you pay nothing. No questions asked.</p>
+          </div>
         </div>
       </section>
 
