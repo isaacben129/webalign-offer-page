@@ -4,7 +4,7 @@ import './index.css'
 import { useEffect } from 'react'
 
 const CTA = () => (
-  <a className="inline-flex items-center gap-3 text-sm uppercase tracking-wide text-[#F5F5F5]" href="#">
+  <a className="inline-flex items-center gap-3 text-sm uppercase tracking-wide text-[#1A1A1A]" href="#">
     <span>Apply For A Launch Sprint</span>
     <span
       data-ph-event="apply_cta_click"
@@ -44,13 +44,13 @@ function App() {
 
   return (
     <main className="text-[#1A1A1A]">
-      <section className="bg-[#2D2D2D] text-[#F5F5F5] min-h-[100svh] px-5 pt-5 pb-6 md:px-10">
+      <section className="bg-[#EFEFEF] text-[#1A1A1A] min-h-[100svh] px-5 pt-5 pb-6 md:px-10">
         <div className="flex items-start justify-between text-[11px] uppercase tracking-[0.16em] text-[#888888]">
           <span>Launch Sprint</span><span>© WA 2025</span><span className="text-lg leading-none">☰</span>
         </div>
         <div className="mt-4 border-t border-[#555555]" />
         <div className="mt-5 max-w-5xl">
-          <h1 className="headline-font text-[#F5F5F5] leading-[0.95] text-[clamp(48px,11vw,88px)]">YOUR IDEA IS WORTHLESS UNTIL IT'S LIVE.</h1>
+          <h1 className="headline-font text-[#1A1A1A] leading-[0.95] text-[clamp(48px,11vw,88px)]">YOUR IDEA IS WORTHLESS UNTIL IT'S LIVE.</h1>
           <p className="mt-3 text-sm text-[#AAAAAA]">We build your launch-ready validation funnel in 48 hours.</p>
           <div className="mt-4 border-t border-[#555555] py-2 border-b">
             <div className="overflow-x-auto whitespace-nowrap text-xs uppercase tracking-wide text-[#888888]">

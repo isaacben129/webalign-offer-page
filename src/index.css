@@ -1,10 +1,30 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap');
+/* GALYON FONT — drop font files into /fonts folder
+   Update src url() paths to match your file names */
+
+@font-face {
+  font-family: 'Galyon';
+  src: url('/fonts/Galyon-Black.woff2') format('woff2'),
+       url('/fonts/Galyon-Black.woff') format('woff');
+  font-weight: 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Galyon';
+  src: url('/fonts/Galyon-Bold.woff2') format('woff2'),
+       url('/fonts/Galyon-Bold.woff') format('woff');
+  font-weight: 700;
+  font-display: swap;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
+  --font-display: 'Galyon', sans-serif;
   color: #1a1a1a;
   background: #efefef;
 }
@@ -21,7 +41,7 @@ body {
 }
 
 .headline-font {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: 'Galyon', sans-serif;
   letter-spacing: 0.01em;
 }
 
