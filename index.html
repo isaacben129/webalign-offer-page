@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -7,6 +7,35 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      (function (t, e) {
+        var o, n, p, r
+        e.__SV = 1
+        window.posthog = e
+        e._i = []
+        e.init = function (i, s, a) {
+          function g(t, e) {
+            var o = e.split('.')
+            o.length == 2 && ((t = t[o[0]]), (e = o[1]))
+            t[e] = function () {
+              t.push([e].concat(Array.prototype.slice.call(arguments, 0)))
+            }
+          }
+          ;((p = t.createElement('script')).type = 'text/javascript')
+          p.crossOrigin = 'anonymous'
+          p.async = true
+          p.src = s.api_host.replace('.i.posthog.com', '-assets.i.posthog.com') + '/static/array.js'
+          ;(r = t.getElementsByTagName('script')[0]).parentNode.insertBefore(p, r)
+          var u = e
+          for (a !== undefined ? (u = e[a] = []) : (a = 'posthog'), u.people = u.people || [], u.toString = function (t) { var e = 'posthog'; return a !== 'posthog' && (e += '.' + a), t || (e += ' (stub)'), e }, u.people.toString = function () { return u.toString(1) + '.people (stub)' }, o = 'init capture register register_once unregister identify alias set_config reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group setPersonProperties setPersonPropertiesForFlags'.split(' '), n = 0; n < o.length; n++) g(u, o[n])
+          e._i.push([i, s, a])
+        }
+        var key = '%VITE_POSTHOG_API_KEY%'
+        if (key && key !== '%VITE_POSTHOG_API_KEY%') {
+          e.init(key, { api_host: 'https://us.i.posthog.com', person_profiles: 'identified_only' })
+        }
+      })(document, window.posthog || [])
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

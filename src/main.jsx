@@ -1,22 +1,183 @@
-import React from 'react'
+﻿import React, { useEffect, useMemo, useState } from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'
-import { useEffect } from 'react'
+
+const INITIAL_FORM = {
+  fullName: '',
+  email: '',
+  idea: '',
+  stage: '',
+}
+
+const STAGES = ['Just an idea', 'Some early validation', 'Already building']
+
+const SECTION_IDS = [
+  'problem',
+  'how_it_works',
+  'case_study',
+  'offer',
+  'final_cta',
+]
+
+function phCapture(eventName, properties = {}) {
+  if (window.posthog && typeof window.posthog.capture === 'function') {
+    window.posthog.capture(eventName, properties)
+  }
+}
 
 function App() {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [form, setForm] = useState(INITIAL_FORM)
+  const [errors, setErrors] = useState({})
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [lastFieldTouched, setLastFieldTouched] = useState('')
+
   useEffect(() => {
-    const observer = new IntersectionObserver(
+    const revealObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) entry.target.classList.add('is-visible')
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible')
+          }
         })
       },
       { threshold: 0.12 }
     )
 
-    document.querySelectorAll('.fade-section').forEach((el) => observer.observe(el))
-    return () => observer.disconnect()
+    document.querySelectorAll('.fade-section').forEach((el) => revealObserver.observe(el))
+
+    const firedScrollSections = new Set()
+    const scrollObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const sectionName = entry.target.getAttribute('data-ph-section')
+          if (entry.isIntersecting && sectionName && !firedScrollSections.has(sectionName)) {
+            phCapture('scroll_depth', { section: sectionName })
+            firedScrollSections.add(sectionName)
+            scrollObserver.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.35 }
+    )
+
+    document.querySelectorAll('[data-ph-section]').forEach((el) => scrollObserver.observe(el))
+
+    return () => {
+      revealObserver.disconnect()
+      scrollObserver.disconnect()
+    }
   }, [])
+
+  useEffect(() => {
+    const marks = [30, 60, 120]
+    const timers = marks.map((seconds) =>
+      window.setTimeout(() => {
+        phCapture('time_on_page', { seconds })
+      }, seconds * 1000)
+    )
+
+    return () => timers.forEach((id) => window.clearTimeout(id))
+  }, [])
+
+  const ideaChars = useMemo(() => form.idea.length, [form.idea])
+
+  const hasAnyFieldFilled = useMemo(
+    () => Object.values(form).some((value) => String(value).trim().length > 0),
+    [form]
+  )
+
+  function validate(values) {
+    const nextErrors = {}
+
+    if (!values.fullName.trim()) nextErrors.fullName = 'Please enter your name.'
+    if (!values.email.trim()) {
+      nextErrors.email = 'Please enter your email address.'
+    } else if (!/^\S+@\S+\.\S+$/.test(values.email)) {
+      nextErrors.email = 'Please enter a valid email address.'
+    }
+
+    if (!values.idea.trim()) {
+      nextErrors.idea = 'Please share your idea.'
+    }
+
+    if (!values.stage) {
+      nextErrors.stage = 'Please choose your current stage.'
+    }
+
+    return nextErrors
+  }
+
+  function openModal(trigger) {
+    setIsModalOpen(true)
+    phCapture('form_opened', { trigger })
+  }
+
+  function closeModal() {
+    if (hasAnyFieldFilled && !isSubmitted) {
+      phCapture('form_abandoned', {
+        last_field_touched: lastFieldTouched || 'unknown',
+      })
+    }
+
+    setIsModalOpen(false)
+    setErrors({})
+
+    if (!isSubmitted) {
+      setForm(INITIAL_FORM)
+      setLastFieldTouched('')
+    }
+  }
+
+  function updateField(field, value) {
+    setForm((prev) => ({ ...prev, [field]: value }))
+    setLastFieldTouched(field)
+    setErrors((prev) => ({ ...prev, [field]: undefined }))
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault()
+
+    const nextErrors = validate(form)
+    setErrors(nextErrors)
+
+    if (Object.keys(nextErrors).length > 0) return
+
+    setIsSubmitting(true)
+
+    try {
+      const response = await fetch('/api/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+
+      const payload = await response.json().catch(() => ({}))
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.error || 'Submission failed.')
+      }
+
+      phCapture('form_submitted')
+      setIsSubmitted(true)
+      setForm(INITIAL_FORM)
+
+      window.setTimeout(() => {
+        setIsModalOpen(false)
+        setIsSubmitted(false)
+        setErrors({})
+        setLastFieldTouched('')
+      }, 4000)
+    } catch (error) {
+      setErrors((prev) => ({
+        ...prev,
+        submit: error.message || 'Something went wrong. Please try again.',
+      }))
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   const heroCarouselItems = [
     ['Docket', 'Legal SaaS'],
@@ -28,7 +189,7 @@ function App() {
   ]
   const heroCarouselLoop = [...heroCarouselItems, ...heroCarouselItems]
   const checklist = [
-    'High-converting sales page — copywritten and designed',
+    'High-converting sales page - copywritten and designed',
     'Mobile-first, fast-loading build',
     'Offer positioning and messaging',
     'Waitlist or preorder system',
@@ -39,65 +200,80 @@ function App() {
   ]
 
   return (
-    <main className="text-[#1A1A1A]">
-      <section className="flex min-h-[100svh] flex-col bg-[#EFEFEF] text-[#1A1A1A] pt-0">
-        <style>{`
-          @keyframes heroPulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-          }
+    <>
+      <main className="text-[#1A1A1A]">
+        <section className="flex min-h-[100svh] flex-col bg-[#EFEFEF] text-[#1A1A1A] pt-0">
+          <style>{`
+            @keyframes heroPulse {
+              0%, 100% { opacity: 1; }
+              50% { opacity: 0.3; }
+            }
+            @keyframes heroCarouselScroll {
+              from { transform: translateX(0); }
+              to { transform: translateX(-50%); }
+            }
+          `}</style>
 
-          @keyframes heroCarouselScroll {
-            from { transform: translateX(0); }
-            to { transform: translateX(-50%); }
-          }
-        `}</style>
+          <div className="px-[clamp(20px,5vw,48px)] py-[18px] md:px-12">
+            <div className="flex items-center justify-between gap-6">
+              <span className="type-overline font-normal text-[#888888]">LAUNCH SPRINT</span>
 
-        <div className="px-[clamp(20px,5vw,48px)] py-[18px] md:px-12">
-          <div className="flex items-center justify-between gap-6">
-            <span className="text-[11px] font-normal uppercase tracking-[0.1em] text-[#888888]">LAUNCH SPRINT</span>
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-3">
+                  <span
+                    className="h-[7px] w-[7px] rounded-full bg-[#2D5A3D]"
+                    style={{ animation: 'heroPulse 2s infinite' }}
+                  />
+                  <span className="type-caption font-normal text-[#1A1A1A]">
+                    {/* SPRINT SLOTS: update the number below when availability changes */}
+                    <span className="slot-count">1</span> sprint slot open this week
+                    {/* END SPRINT SLOTS */}
+                  </span>
+                </div>
 
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-3">
-                <span
-                  className="h-[7px] w-[7px] rounded-full bg-[#2D5A3D]"
-                  style={{ animation: 'heroPulse 2s infinite' }}
-                />
-                <span className="text-[12px] font-normal text-[#1A1A1A]">1 sprint slot open this week</span>
+                <button
+                  type="button"
+                  data-ph-event="apply_cta_click"
+                  onClick={() => {
+                    phCapture('apply_cta_click', { location: 'nav' })
+                    openModal('nav_cta')
+                  }}
+                    className="type-caption inline-flex items-center rounded-full bg-[#1A1A1A] px-[18px] py-[9px] font-medium tracking-[0.04em] text-[#F5F5F5]"
+                >
+                  Apply now
+                </button>
               </div>
-
-              <a
-                href="#"
-                data-ph-event="apply_cta_click"
-                className="inline-flex items-center rounded-full bg-[#1A1A1A] px-[18px] py-[9px] text-[12px] font-medium tracking-[0.04em] text-[#F5F5F5]"
-              >
-                Apply now
-              </a>
             </div>
           </div>
-        </div>
-        <div className="w-full border-t border-[#D0D0D0]" style={{ borderTopWidth: '0.5px' }} />
 
-        <div className="flex flex-col px-[clamp(20px,5vw,48px)] pb-[clamp(0px,2vh,32px)] pt-[clamp(60px,11.25vh,125px)] md:px-12">
-          <div className="flex flex-col gap-0">
+          <div className="w-full border-t border-[#D0D0D0]" style={{ borderTopWidth: '0.5px' }} />
+
+          <div className="flex flex-col px-[clamp(20px,5vw,48px)] pb-[clamp(0px,2vh,32px)] pt-[clamp(60px,11.25vh,125px)] md:px-12">
             <h1
-              className="headline-font mt-[clamp(28px,4.5vh,56px)] w-full max-w-full text-[clamp(42px,5.2vw,76px)] uppercase leading-[1] tracking-[-0.03em] text-[#1A1A1A] md:max-w-[80%] lg:max-w-[58%]"
-              style={{ fontWeight: 400, marginBottom: 'clamp(10px, 1.75vh, 18px)' }}
+              className="type-hero mt-[clamp(28px,4.5vh,56px)] w-full max-w-full text-[#1A1A1A] md:max-w-[80%] lg:max-w-[58%]"
+              style={{ marginBottom: 'clamp(10px, 1.75vh, 18px)' }}
             >
               YOUR IDEA IS WORTHLESS UNTIL IT&apos;S LIVE.
             </h1>
 
             <div className="mt-[clamp(24px,4vh,48px)] flex w-full max-w-[820px] flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-              <p className="max-w-[420px] text-[13px] font-light leading-[1.7] text-[#555555]">
-                We turn rough startup ideas into launch-ready validation funnels in 48 hours — sales page, waitlist, preorder flow, lead capture, and analytics. Everything to go live and get real signal. Nothing you don&apos;t need.
+              <p className="type-body-sm max-w-[420px] font-light text-[#555555]">
+                We turn rough startup ideas into launch-ready validation funnels in 48 hours - sales page, waitlist,
+                preorder flow, lead capture, and analytics. Everything to go live and get real signal.
               </p>
 
               <div className="lg:self-end">
                 <div className="flex items-center gap-3">
-                  <span className="text-[12px] font-medium uppercase tracking-[0.07em] text-[#1A1A1A]">APPLY FOR A LAUNCH SPRINT</span>
-                  <a
-                    href="#"
+                  <span className="type-caption font-medium uppercase tracking-[0.07em] text-[#1A1A1A]">
+                    APPLY FOR A LAUNCH SPRINT
+                  </span>
+                  <button
+                    type="button"
                     data-ph-event="apply_cta_click"
+                    onClick={() => {
+                      phCapture('apply_cta_click', { location: 'hero' })
+                      openModal('hero_cta')
+                    }}
                     className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#2D5A3D] text-[#F5F5F5]"
                     aria-label="Apply for a launch sprint"
                   >
@@ -105,62 +281,214 @@ function App() {
                       <path d="M4.5 11.5L11.5 4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
                       <path d="M6.5 4.5H11.5V9.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                  </a>
+                  </button>
                 </div>
-                <p className="mt-2 text-[11px] font-light text-[#999999]">Delivered in 48 hours or you pay nothing.</p>
+                <p className="type-overline mt-2 font-light normal-case tracking-normal text-[#999999]">Delivered in 48 hours or you pay nothing.</p>
+              </div>
+            </div>
+
+            <div className="relative left-1/2 right-1/2 mt-[clamp(32px,5vh,56px)] -ml-[50vw] -mr-[50vw] w-screen overflow-hidden">
+              <div
+                className="flex w-max gap-4 px-[clamp(20px,5vw,48px)] md:px-12"
+                style={{ animation: 'heroCarouselScroll 18s linear infinite' }}
+              >
+                {heroCarouselLoop.map(([name, category], index) => {
+                  const itemNumber = index + 1
+                  let background = '#D8D8D4'
+                  if (itemNumber % 4 === 0) background = '#E8E4DC'
+                  else if (itemNumber % 3 === 0) background = '#C8CFC9'
+                  else if (itemNumber % 2 === 0) background = '#2D2D2D'
+
+                  const isDark = background === '#2D2D2D'
+
+                  return (
+                    <div
+                      key={`${name}-${category}-${index}`}
+                      className="relative h-[170px] w-[260px] flex-shrink-0 overflow-hidden rounded-[4px]"
+                      style={{ backgroundColor: background }}
+                    >
+                      <div className="flex h-full w-full items-center justify-center">
+                        <div className="h-[75%] w-[85%] rounded-[4px] bg-white opacity-[0.15]" />
+                      </div>
+                      <span
+                        className="type-overline absolute bottom-3 left-3 tracking-[0.08em]"
+                        style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.2)' }}
+                      >
+                        {name} - {category}
+                      </span>
+                    </div>
+                  )
+                })}
               </div>
             </div>
           </div>
+        </section>
 
-          <div className="relative left-1/2 right-1/2 mt-[clamp(32px,5vh,56px)] -ml-[50vw] -mr-[50vw] w-screen overflow-hidden">
-            <div
-              className="flex w-max gap-4 px-[clamp(20px,5vw,48px)] md:px-12"
-              style={{ animation: 'heroCarouselScroll 18s linear infinite' }}
-            >
-              {heroCarouselLoop.map(([name, category], index) => {
-                const itemNumber = index + 1
-                let background = '#D8D8D4'
-                if (itemNumber % 4 === 0) background = '#E8E4DC'
-                else if (itemNumber % 3 === 0) background = '#C8CFC9'
-                else if (itemNumber % 2 === 0) background = '#2D2D2D'
+        <section id={SECTION_IDS[0]} data-ph-section={SECTION_IDS[0]} className="fade-section bg-[#EFEFEF] px-5 py-16 md:px-10">
+          <div className="max-w-5xl">
+            <p className="type-overline tracking-[0.14em] text-[#888888]">The Problem</p>
+            <h2 className="type-display mt-4">YOU'RE NOT STUCK<br/>BECAUSE YOUR IDEA<br/>IS BAD.</h2>
+            <p className="type-body-lg mt-6 max-w-[520px] text-[#444444]">
+              You&apos;ve researched the market. You&apos;ve tweaked the name. You&apos;ve built the deck nobody asked for.
+              You&apos;re waiting to feel ready, but that feeling never comes. Meanwhile, someone with a worse idea just
+              launched. They&apos;re getting signups. You&apos;re getting nothing.
+            </p>
+            <div className="mt-8 border-l-[3px] border-[#2D5A3D]">
+              <div className="border-t border-[#bdbdbd]" />
+              {[
+                'Been sitting on this idea for 3+ months?',
+                'Redesigned your logo more than once?',
+                "Built features nobody's asked for yet?",
+                'Waiting until it\'s "ready enough"?',
+                'Still in research mode?',
+              ].map((item) => (
+                <p key={item} className="type-body border-t border-[#bdbdbd] py-3 pl-4 text-[#1A1A1A]">- {item}</p>
+              ))}
+            </div>
+            <p className="type-h3 mt-8 text-[#1A1A1A]">You don&apos;t have an idea problem. You have a shipping problem.</p>
+          </div>
+        </section>
 
-                const isDark = background === '#2D2D2D'
-
-                return (
-                  <div
-                    key={`${name}-${category}-${index}`}
-                    className="relative h-[170px] w-[260px] flex-shrink-0 overflow-hidden rounded-[4px]"
-                    style={{ backgroundColor: background }}
-                  >
-                    <div className="flex h-full w-full items-center justify-center">
-                      <div className="h-[75%] w-[85%] rounded-[4px] bg-white opacity-[0.15]" />
-                    </div>
-                    <span
-                      className="absolute bottom-3 left-3 text-[10px] uppercase tracking-[0.08em]"
-                      style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.2)' }}
-                    >
-                      {name} — {category}
-                    </span>
-                  </div>
-                )
-              })}
+        <section id={SECTION_IDS[1]} data-ph-section={SECTION_IDS[1]} className="fade-section bg-[#2D2D2D] px-5 py-16 text-[#F5F5F5] md:px-10">
+          <div className="max-w-6xl">
+            <p className="type-overline tracking-[0.14em] text-[#888888]">The Process</p>
+            <h2 className="type-h2 mt-4">HOW IT WORKS</h2>
+            <div className="mt-8 grid gap-0 md:grid-cols-3">
+              {[
+                ['01', 'Send us your idea', "Rough idea, messy notes, voice memo; it doesn't matter. Fill out a short application and tell us what you're building and who it's for."],
+                ['02', 'We build the launch system', 'In 48 hours we build a high-converting sales page, lead capture, waitlist or preorder flow, analytics, and a mobile-optimized funnel.'],
+                ['03', 'You launch. You validate.', 'Go live. Get signups. Find out if people actually want this, before you spend months building the wrong thing.'],
+              ].map(([n, t, d], i) => (
+                <div key={n} className={`py-6 ${i > 0 ? 'border-t md:border-l md:border-t-0 border-[#555555]' : ''} md:pl-6`}>
+                  <p className="headline-font text-6xl leading-none text-[#555555]">{n}</p>
+                  <p className="type-body-lg mt-4 font-bold text-[#F5F5F5]">{t}</p>
+                  <p className="type-body mt-3 text-[#AAAAAA]">{d}</p>
+                </div>
+              ))}
             </div>
           </div>
+        </section>
+
+        <section id={SECTION_IDS[2]} data-ph-section={SECTION_IDS[2]} className="fade-section bg-[#EFEFEF] px-5 py-16 md:px-10">
+          <div className="max-w-5xl">
+            <p className="type-overline tracking-[0.14em] text-[#888888]">Proof Of Execution</p>
+            <h2 className="type-h2 mt-4">FROM IDEA TO LIVE FUNNEL IN UNDER 48 HOURS.</h2>
+            <p className="type-body mt-3 text-[#888888]">How we launched Docket.</p>
+            <p className="type-body-lg mt-6 max-w-[520px] text-[#444444]">
+              Docket is a legal document management tool for Ugandan SMEs. The founder had the idea, knew the
+              problem, and had zero online presence. We built the entire launch system in 48 hours.
+            </p>
+            <div className="mt-8 border-l-[3px] border-[#2D5A3D]">
+              {[
+                'Mobile-first landing page with clear positioning',
+                'Preorder flow with low-friction CTA',
+                'Lead capture integrated and live',
+                'Analytics tracking from day one',
+                'TikTok-ready funnel entry point',
+              ].map((item) => (
+                <p key={item} className="type-body border-t border-[#bdbdbd] py-3 pl-4 text-[#1A1A1A]">- {item}</p>
+              ))}
+            </div>
+            <div className="type-caption mt-8 flex aspect-video w-full items-center justify-center bg-[#CCCCCC] text-center text-[#888888]">
+              [ Docket - Launch Page Screenshot ]
+            </div>
+            <p className="type-h3 mt-8 text-[#2D5A3D]">THAT&apos;S WHAT VALIDATION LOOKS LIKE.</p>
+          </div>
+        </section>
+
+        <section id={SECTION_IDS[3]} data-ph-section={SECTION_IDS[3]} className="fade-section bg-[#2D2D2D] px-5 py-16 text-[#F5F5F5] md:px-10">
+          <div className="max-w-6xl">
+            <p className="type-overline tracking-[0.14em] text-[#888888]">What You Get</p>
+            <h2 className="type-h2 mt-4">EVERYTHING YOU NEED TO LAUNCH.<br/>NOTHING YOU DON&apos;T.</h2>
+            <div className="mt-8 grid md:grid-cols-2 md:gap-x-10">
+              {checklist.map((item) => (
+                <p key={item} className="type-body border-t border-[#555555] py-3"><span className="mr-2 text-[#2D5A3D]">OK</span>{item}</p>
+              ))}
+            </div>
+            <div className="mt-0 bg-[#1A1A1A] px-6 py-9 md:px-10">
+              <p className="type-h2">DELIVERED IN 48 HOURS OR YOU PAY NOTHING.</p>
+              <p className="type-body mt-4 max-w-[480px] text-[#888888]">
+                No vague timelines. No chasing. If we miss the window, you get a full refund. No questions asked.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section id={SECTION_IDS[4]} data-ph-section={SECTION_IDS[4]} className="fade-section bg-[#EFEFEF] px-5 py-16 md:px-10">
+          <div className="max-w-5xl">
+            <h2 className="type-display">STOP PLANNING.<br/>START LAUNCHING.</h2>
+            <p className="type-body-lg mt-6 max-w-[460px] text-[#444444]">
+              Every day you don&apos;t launch is a day someone else validates the same idea.
+            </p>
+            <div className="mt-6 text-[#1A1A1A]">
+              <button type="button" onClick={() => openModal('hero_cta')} className="type-caption inline-flex items-center gap-3 uppercase tracking-wide">
+                <span>Apply For A Launch Sprint</span>
+                <span className="inline-flex h-10 w-10 items-center justify-center bg-[#2D5A3D] text-[#F5F5F5]">↗</span>
+              </button>
+            </div>
+            <p className="type-body-sm mt-3 text-[#888888]">Applications take 3 minutes. We review within 24 hours.</p>
+          </div>
+        </section>
+      </main>
+
+      {isModalOpen && (
+        <div className="form-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="form-modal-title">
+          <div className="form-modal-panel">
+            <button type="button" className="form-modal-close" onClick={closeModal} aria-label="Close form">X</button>
+
+            {!isSubmitted ? (
+              <form className="form-shell" onSubmit={handleSubmit} noValidate>
+                <h2 id="form-modal-title" className="headline-font form-title">Apply for a Launch Sprint</h2>
+
+                <label className="form-label" htmlFor="fullName">FULL NAME</label>
+                <input id="fullName" className={`form-input ${errors.fullName ? 'is-error' : ''}`} value={form.fullName} onChange={(e) => updateField('fullName', e.target.value)} placeholder="Your name" />
+                {errors.fullName && <p className="form-error">{errors.fullName}</p>}
+
+                <label className="form-label" htmlFor="email">EMAIL ADDRESS</label>
+                <input id="email" type="email" className={`form-input ${errors.email ? 'is-error' : ''}`} value={form.email} onChange={(e) => updateField('email', e.target.value)} placeholder="your@email.com" />
+                {errors.email && <p className="form-error">{errors.email}</p>}
+
+                <label className="form-label" htmlFor="idea">WHAT'S YOUR IDEA?</label>
+                <div className="form-textarea-wrap">
+                  <textarea id="idea" className={`form-input form-textarea ${errors.idea ? 'is-error' : ''}`} value={form.idea} onChange={(e) => updateField('idea', e.target.value.slice(0, 500))} placeholder="Describe it rough - a sentence or two is fine" maxLength={500} />
+                  <span className="form-counter">{ideaChars}/500</span>
+                </div>
+                {errors.idea && <p className="form-error">{errors.idea}</p>}
+
+                <label className="form-label">WHERE ARE YOU AT?</label>
+                <div className="stage-toggle-row" role="radiogroup" aria-label="Where are you at?">
+                  {STAGES.map((stage) => (
+                    <button
+                      key={stage}
+                      type="button"
+                      className={`stage-toggle ${form.stage === stage ? 'is-active' : ''} ${errors.stage ? 'is-error' : ''}`}
+                      onClick={() => updateField('stage', stage)}
+                    >
+                      {stage}
+                    </button>
+                  ))}
+                </div>
+                {errors.stage && <p className="form-error">{errors.stage}</p>}
+
+                {errors.submit && <p className="form-error">{errors.submit}</p>}
+
+                <button type="submit" className="form-submit" disabled={isSubmitting} data-ph-event="form_submitted">
+                  <span>SEND APPLICATION</span>
+                  <span className="form-submit-circle">↗</span>
+                </button>
+              </form>
+            ) : (
+              <div className="form-confirmation" aria-live="polite">
+                <h3 className="headline-font">YOU'RE IN THE QUEUE.</h3>
+                <p>
+                  We'll review your application and get back to you within 24 hours. Check your email - and your spam folder just in case.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
-      </section>
-
-      <section className="fade-section bg-[#EFEFEF] px-5 py-16 md:px-10"><div className="max-w-5xl"><p className="text-xs uppercase tracking-[0.14em] text-[#888888]">The Problem</p><h2 className="headline-font mt-4 text-[clamp(52px,10vw,96px)] leading-[0.92]">YOU'RE NOT STUCK<br/>BECAUSE YOUR IDEA<br/>IS BAD.</h2><p className="mt-6 max-w-[520px] text-lg leading-relaxed text-[#444444]">You've researched the market. You've tweaked the name. You've built the deck nobody asked for. You're waiting to feel ready — but that feeling never comes. Meanwhile, someone with a worse idea just launched. They're getting signups. You're getting nothing.</p><div className="mt-8 border-l-[3px] border-[#2D5A3D]"><div className="border-t border-[#bdbdbd]" />{['Been sitting on this idea for 3+ months?','Redesigned your logo more than once?','Built features nobody\'s asked for yet?','Waiting until it\'s "ready enough"?','Still in research mode?'].map((item)=><p key={item} className="border-t border-[#bdbdbd] py-3 pl-4 text-base text-[#1A1A1A]">— {item}</p>)}</div><p className="mt-8 text-[20px] text-[#1A1A1A]">You don't have an idea problem. You have a shipping problem.</p></div></section>
-
-      <section className="fade-section bg-[#2D2D2D] px-5 py-16 text-[#F5F5F5] md:px-10"><div className="max-w-6xl"><p className="text-xs uppercase tracking-[0.14em] text-[#888888]">The Process</p><h2 className="headline-font mt-4 text-[clamp(48px,8vw,72px)]">HOW IT WORKS</h2><div className="mt-8 grid gap-0 md:grid-cols-3">{[['01','Send us your idea','Rough idea, messy notes, voice memo — doesn\'t matter. Fill out a short application and tell us what you\'re building and who it\'s for.'],['02','We build the launch system','In 48 hours we build a high-converting sales page, lead capture, waitlist or preorder flow, analytics, and a mobile-optimized funnel.'],['03','You launch. You validate.','Go live. Get signups. Find out if people actually want this — before you spend months building the wrong thing.']].map(([n,t,d],i)=><div key={n} className={`py-6 ${i>0?'border-t md:border-t-0 md:border-l border-[#555555]':''} md:pl-6`}><p className="headline-font text-6xl leading-none text-[#555555]">{n}</p><p className="mt-4 text-lg font-bold">{t}</p><p className="mt-3 text-[15px] leading-relaxed text-[#AAAAAA]">{d}</p></div>)}</div></div></section>
-
-      <section className="fade-section bg-[#EFEFEF] px-5 py-16 md:px-10"><div className="max-w-5xl"><p className="text-xs uppercase tracking-[0.14em] text-[#888888]">Proof Of Execution</p><h2 className="headline-font mt-4 text-[clamp(46px,8vw,74px)] leading-[0.95]">FROM IDEA TO LIVE FUNNEL IN UNDER 48 HOURS.</h2><p className="mt-3 text-base text-[#888888]">How we launched Docket.</p><p className="mt-6 max-w-[520px] text-lg leading-relaxed text-[#444444]">Docket is a legal document management tool for Ugandan SMEs. The founder had the idea, knew the problem, and had zero online presence. We built the entire launch system in 48 hours.</p><div className="mt-8 border-l-[3px] border-[#2D5A3D]">{['Mobile-first landing page with clear positioning','Preorder flow with low-friction CTA','Lead capture integrated and live','Analytics tracking from day one','TikTok-ready funnel entry point'].map((item)=><p key={item} className="border-t border-[#bdbdbd] py-3 pl-4 text-base text-[#1A1A1A]">— {item}</p>)}</div><div className="mt-8 aspect-video w-full bg-[#CCCCCC] flex items-center justify-center text-center text-sm text-[#888888]">[ Docket — Launch Page Screenshot ]</div><p className="headline-font mt-8 text-[48px] leading-[0.95] text-[#2D5A3D]">THAT'S WHAT VALIDATION LOOKS LIKE.</p></div></section>
-
-      <section className="fade-section bg-[#2D2D2D] px-5 py-16 text-[#F5F5F5] md:px-10"><div className="max-w-6xl"><p className="text-xs uppercase tracking-[0.14em] text-[#888888]">What You Get</p><h2 className="headline-font mt-4 text-[clamp(48px,8vw,74px)] leading-[0.95]">EVERYTHING YOU NEED TO LAUNCH.<br/>NOTHING YOU DON'T.</h2><div className="mt-8 grid md:grid-cols-2 md:gap-x-10">{checklist.map((item)=><p key={item} className="border-t border-[#555555] py-3 text-[15px]"><span className="mr-2 text-[#2D5A3D]">✓</span>{item}</p>)}</div><div className="mt-0 bg-[#1A1A1A] px-6 py-9 md:px-10"><p className="headline-font text-[clamp(42px,7vw,52px)] leading-[0.95]">DELIVERED IN 48 HOURS OR YOU PAY NOTHING.</p><p className="mt-4 max-w-[480px] text-[15px] leading-relaxed text-[#888888]">No vague timelines. No chasing. If we miss the window, you get a full refund. No questions asked.</p></div></div></section>
-
-      <section className="fade-section bg-[#EFEFEF] px-5 py-16 md:px-10"><div className="max-w-5xl"><h2 className="headline-font text-[clamp(56px,10vw,96px)] leading-[0.9]">STOP PLANNING.<br/>START LAUNCHING.</h2><p className="mt-6 max-w-[460px] text-lg leading-relaxed text-[#444444]">Every day you don't launch is a day someone else validates the same idea.</p><div className="mt-6 text-[#1A1A1A]"><a href="#" className="inline-flex items-center gap-3 text-sm uppercase tracking-wide"><span>Apply For A Launch Sprint</span><span data-ph-event="apply_cta_click" className="inline-flex h-10 w-10 items-center justify-center bg-[#2D5A3D] text-[#F5F5F5]">↗</span></a></div><p className="mt-3 text-[13px] text-[#888888]">Applications take 3 minutes. We review within 24 hours.</p></div></section>
-
-      <footer className="bg-[#2D2D2D] px-5 py-12 text-[#F5F5F5] md:px-10"><div className="max-w-6xl"><p className="headline-font text-6xl">WA</p><div className="mt-8 grid grid-cols-2 gap-8 text-sm"><div><p className="mb-3 text-xs uppercase tracking-[0.14em] text-[#888888]">Company</p><p>Home</p><p>Portfolio</p><p>Blog</p></div><div><p className="mb-3 text-xs uppercase tracking-[0.14em] text-[#888888]">Portfolio</p><p>Behance</p><p>Dribble</p><p>Pinterest</p></div><div><p className="mb-3 text-xs uppercase tracking-[0.14em] text-[#888888]">Social</p><p>X</p><p>Whatsapp</p><p>YouTube</p></div><div><p className="mb-3 text-xs uppercase tracking-[0.14em] text-[#888888]">Contacts</p><p>hello@webalign.studio</p><p>+256 708 349458</p></div></div><div className="mt-8 border-t border-[#555555]" /><div className="mt-4 flex justify-between text-xs uppercase tracking-[0.14em] text-[#888888]"><span>Privacy Policy</span><span>© WA 2025</span></div></div></footer>
-    </main>
+      )}
+    </>
   )
 }
 
