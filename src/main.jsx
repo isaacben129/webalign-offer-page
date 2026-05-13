@@ -3,18 +3,6 @@ import ReactDOM from 'react-dom/client'
 import './index.css'
 import { useEffect } from 'react'
 
-const CTA = () => (
-  <a className="inline-flex items-center gap-3 text-[13px] uppercase tracking-[0.04em] text-[#1A1A1A]" href="#">
-    <span>Apply For A Launch Sprint</span>
-    <span
-      data-ph-event="apply_cta_click"
-      className="inline-flex h-10 w-10 items-center justify-center border border-[#2D5A3D] bg-[#2D5A3D] text-lg leading-none text-[#F5F5F5] !rounded-full"
-    >
-      ↗
-    </span>
-  </a>
-)
-
 function App() {
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -30,7 +18,15 @@ function App() {
     return () => observer.disconnect()
   }, [])
 
-  const stripItems = ['Sales Page', 'Waitlist', 'Preorder Flow', 'Lead Capture', 'Analytics', 'Mobile-First', 'CTA Optimization', '48 Hours']
+  const heroCarouselItems = [
+    ['Docket', 'Legal SaaS'],
+    ['Safari Tours', 'Tourism'],
+    ['LexPro', 'Legal'],
+    ['EduPath', 'EdTech'],
+    ['MedLink', 'Health'],
+    ['BuildFast', 'SaaS'],
+  ]
+  const heroCarouselLoop = [...heroCarouselItems, ...heroCarouselItems]
   const checklist = [
     'High-converting sales page — copywritten and designed',
     'Mobile-first, fast-loading build',
@@ -44,28 +40,111 @@ function App() {
 
   return (
     <main className="text-[#1A1A1A]">
-      <section className="bg-[#EFEFEF] text-[#1A1A1A] min-h-[100svh] pb-[clamp(48px,8vh,96px)] pt-0">
-        <div className="px-[clamp(24px,6vw,80px)] pt-5 pb-5">
-          <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.16em] text-[#888888]">
-            <span>Launch Sprint</span><span className="ml-auto mr-4 md:mr-8">1 Sprint Slot Open</span><span className="text-lg leading-none">☰</span>
+      <section className="flex min-h-[100svh] flex-col bg-[#EFEFEF] text-[#1A1A1A] pt-0">
+        <style>{`
+          @keyframes heroPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+          }
+
+          @keyframes heroCarouselScroll {
+            from { transform: translateX(0); }
+            to { transform: translateX(-50%); }
+          }
+        `}</style>
+
+        <div className="px-[clamp(20px,5vw,48px)] py-[18px] md:px-12">
+          <div className="flex items-center justify-between gap-6">
+            <span className="text-[11px] font-normal uppercase tracking-[0.1em] text-[#888888]">LAUNCH SPRINT</span>
+
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-3">
+                <span
+                  className="h-[7px] w-[7px] rounded-full bg-[#2D5A3D]"
+                  style={{ animation: 'heroPulse 2s infinite' }}
+                />
+                <span className="text-[12px] font-normal text-[#1A1A1A]">1 sprint slot open this week</span>
+              </div>
+
+              <a
+                href="#"
+                data-ph-event="apply_cta_click"
+                className="inline-flex items-center rounded-full bg-[#1A1A1A] px-[18px] py-[9px] text-[12px] font-medium tracking-[0.04em] text-[#F5F5F5]"
+              >
+                Apply now
+              </a>
+            </div>
           </div>
         </div>
-        <div className="w-full border-t border-[#555555]" />
+        <div className="w-full border-t border-[#D0D0D0]" style={{ borderTopWidth: '0.5px' }} />
 
-        <div className="px-[clamp(24px,6vw,80px)] pt-[clamp(72px,12vh,140px)]">
-          <h1 className="headline-font w-full text-[#1A1A1A] text-[clamp(52px,10vw,96px)] leading-[0.9] tracking-[-0.03em] md:w-[80%] lg:w-[60%]">YOUR IDEA IS WORTHLESS UNTIL IT'S LIVE.</h1>
+        <div className="flex flex-col px-[clamp(20px,5vw,48px)] pb-[clamp(0px,2vh,32px)] pt-[clamp(60px,11.25vh,125px)] md:px-12">
+          <div className="flex flex-col gap-0">
+            <h1
+              className="headline-font mt-[clamp(28px,4.5vh,56px)] w-full max-w-full text-[clamp(42px,5.2vw,76px)] uppercase leading-[1] tracking-[-0.03em] text-[#1A1A1A] md:max-w-[80%] lg:max-w-[58%]"
+              style={{ fontWeight: 400, marginBottom: 'clamp(10px, 1.75vh, 18px)' }}
+            >
+              YOUR IDEA IS WORTHLESS UNTIL IT&apos;S LIVE.
+            </h1>
 
-          <div className="mt-[clamp(40px,6vh,72px)] flex w-full flex-col gap-3 md:w-[80%] lg:w-[60%]">
-            <p className="text-[14px] text-[#888888] md:whitespace-nowrap">We build your launch-ready validation funnel in 48 hours.</p>
+            <div className="mt-[clamp(24px,4vh,48px)] flex w-full max-w-[820px] flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+              <p className="max-w-[420px] text-[13px] font-light leading-[1.7] text-[#555555]">
+                We turn rough startup ideas into launch-ready validation funnels in 48 hours — sales page, waitlist, preorder flow, lead capture, and analytics. Everything to go live and get real signal. Nothing you don&apos;t need.
+              </p>
 
-            <div className="w-screen border-y border-[#555555] relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] py-2">
-              <div className="overflow-x-auto whitespace-nowrap text-[12px] uppercase tracking-[0.04em] text-[#888888] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                {stripItems.map((item, i) => <span key={item} className="inline-flex shrink-0 items-center">{i > 0 && <span className="mx-3 text-[#666666]">|</span>}{item}</span>)}
+              <div className="lg:self-end">
+                <div className="flex items-center gap-3">
+                  <span className="text-[12px] font-medium uppercase tracking-[0.07em] text-[#1A1A1A]">APPLY FOR A LAUNCH SPRINT</span>
+                  <a
+                    href="#"
+                    data-ph-event="apply_cta_click"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#2D5A3D] text-[#F5F5F5]"
+                    aria-label="Apply for a launch sprint"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                      <path d="M4.5 11.5L11.5 4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                      <path d="M6.5 4.5H11.5V9.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </a>
+                </div>
+                <p className="mt-2 text-[11px] font-light text-[#999999]">Delivered in 48 hours or you pay nothing.</p>
               </div>
             </div>
+          </div>
 
-            <div><CTA /></div>
-            <p className="mt-[10px] text-[12px] text-[#888888]">Delivered in 48 hours or you pay nothing. No questions asked.</p>
+          <div className="relative left-1/2 right-1/2 mt-[clamp(32px,5vh,56px)] -ml-[50vw] -mr-[50vw] w-screen overflow-hidden">
+            <div
+              className="flex w-max gap-4 px-[clamp(20px,5vw,48px)] md:px-12"
+              style={{ animation: 'heroCarouselScroll 18s linear infinite' }}
+            >
+              {heroCarouselLoop.map(([name, category], index) => {
+                const itemNumber = index + 1
+                let background = '#D8D8D4'
+                if (itemNumber % 4 === 0) background = '#E8E4DC'
+                else if (itemNumber % 3 === 0) background = '#C8CFC9'
+                else if (itemNumber % 2 === 0) background = '#2D2D2D'
+
+                const isDark = background === '#2D2D2D'
+
+                return (
+                  <div
+                    key={`${name}-${category}-${index}`}
+                    className="relative h-[170px] w-[260px] flex-shrink-0 overflow-hidden rounded-[4px]"
+                    style={{ backgroundColor: background }}
+                  >
+                    <div className="flex h-full w-full items-center justify-center">
+                      <div className="h-[75%] w-[85%] rounded-[4px] bg-white opacity-[0.15]" />
+                    </div>
+                    <span
+                      className="absolute bottom-3 left-3 text-[10px] uppercase tracking-[0.08em]"
+                      style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.2)' }}
+                    >
+                      {name} — {category}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         </div>
       </section>
