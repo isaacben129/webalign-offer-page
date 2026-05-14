@@ -1,4 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
 
 @font-face {
   font-family: 'Galyon';
@@ -23,14 +23,6 @@
 :root {
   --font-display: 'Galyon', sans-serif;
   --font-body: 'DM Sans', sans-serif;
-  --bg-page: #efefed;
-  --bg-panel: #e4e4e2;
-  --bg-card: #f7f7f5;
-  --ink-strong: #191919;
-  --ink-body: #353535;
-  --ink-muted: #6a6a6a;
-  --line-soft: #d2d2cf;
-  --accent: #2d5a3d;
   --text-hero: clamp(42px, 5.2vw, 76px);
   --text-display: clamp(34px, 6.4vw, 56px);
   --text-h2: clamp(30px, 5.2vw, 44px);
@@ -45,15 +37,14 @@
   --leading-body: 1.65;
   --tracking-display: -0.02em;
   --tracking-overline: 0.1em;
-  color: var(--ink-strong);
-  background: var(--bg-page);
+  color: #1a1a1a;
+  background: #efefef;
 }
 
 body {
   margin: 0;
   font-family: var(--font-body);
-  background: radial-gradient(circle at 10% 0%, #f4f4f2 0%, var(--bg-page) 55%);
-  color: var(--ink-strong);
+  background: #efefef;
 }
 
 .headline-font {
@@ -129,57 +120,6 @@ body {
   text-transform: uppercase;
 }
 
-.site-shell {
-  max-width: 1240px;
-  margin: 0 auto;
-  padding: clamp(16px, 3.2vw, 40px);
-}
-
-.panel-soft {
-  background: var(--bg-panel);
-  border: 1px solid var(--line-soft);
-  border-radius: 28px;
-}
-
-.card-soft {
-  background: var(--bg-card);
-  border: 1px solid var(--line-soft);
-  border-radius: 18px;
-}
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 12px;
-  border-radius: 9999px;
-  border: 1px solid #e3e3e0;
-  background: #f4f4f2;
-  color: var(--ink-muted);
-  font-family: var(--font-body);
-  font-size: 12px;
-  line-height: 1.2;
-}
-
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border: 0;
-  border-radius: 9999px;
-  background: #131313;
-  color: #f5f5f3;
-  padding: 12px 18px;
-  font-family: var(--font-body);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.dot-line {
-  height: 1px;
-  background: linear-gradient(to right, transparent, var(--line-soft), transparent);
-}
-
 .fade-section {
   opacity: 0;
   transform: translateY(12px);
@@ -205,7 +145,6 @@ body {
   width: min(680px, calc(100vw - 32px));
   background: #1a1a1a;
   position: relative;
-  border-radius: 20px;
   animation: modalFadeIn 220ms ease-out;
 }
 

@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'
 
@@ -189,14 +189,14 @@ function App() {
   ]
   const heroCarouselLoop = [...heroCarouselItems, ...heroCarouselItems]
   const checklist = [
-    'High-converting sales page - copywritten and designed',
-    'Mobile-first, fast-loading build',
-    'Offer positioning and messaging',
-    'Waitlist or preorder system',
-    'Lead capture setup',
-    'CTA optimization',
-    'Analytics integration ready for PostHog or GA',
-    'Launch-ready in 48 hours',
+    ['High-converting sales page', 'Copywritten and designed for conversion.'],
+    ['Mobile-first, fast-loading build', 'Built to perform cleanly on every device.'],
+    ['Offer positioning and messaging', 'Clarify what you sell and why it matters.'],
+    ['Waitlist or preorder system', 'Capture demand before full product build.'],
+    ['Lead capture setup', 'Structured to collect and qualify interest.'],
+    ['CTA optimization', 'Clear next actions that drive response.'],
+    ['Analytics integration', 'Ready for PostHog or GA tracking.'],
+    ['Launch-ready in 48 hours', 'Delivered on a hard timeline.'],
   ]
 
   return (
@@ -225,9 +225,7 @@ function App() {
                     style={{ animation: 'heroPulse 2s infinite' }}
                   />
                   <span className="type-caption font-normal text-[#1A1A1A]">
-                    {/* SPRINT SLOTS: update the number below when availability changes */}
                     <span className="slot-count">1</span> sprint slot open this week
-                    {/* END SPRINT SLOTS */}
                   </span>
                 </div>
 
@@ -238,7 +236,7 @@ function App() {
                     phCapture('apply_cta_click', { location: 'nav' })
                     openModal('nav_cta')
                   }}
-                    className="type-caption inline-flex items-center rounded-full bg-[#1A1A1A] px-[18px] py-[9px] font-medium tracking-[0.04em] text-[#F5F5F5]"
+                  className="type-caption inline-flex items-center rounded-full bg-[#1A1A1A] px-[18px] py-[9px] font-medium tracking-[0.04em] text-[#F5F5F5]"
                 >
                   Apply now
                 </button>
@@ -324,43 +322,59 @@ function App() {
           </div>
         </section>
 
-        <section id={SECTION_IDS[0]} data-ph-section={SECTION_IDS[0]} className="fade-section bg-[#EFEFEF] px-5 py-16 md:px-10">
-          <div className="max-w-5xl">
-            <p className="type-overline tracking-[0.14em] text-[#888888]">The Problem</p>
-            <h2 className="type-display mt-4">YOU'RE NOT STUCK<br/>BECAUSE YOUR IDEA<br/>IS BAD.</h2>
-            <p className="type-body-lg mt-6 max-w-[520px] text-[#444444]">
-              You&apos;ve researched the market. You&apos;ve tweaked the name. You&apos;ve built the deck nobody asked for.
-              You&apos;re waiting to feel ready, but that feeling never comes. Meanwhile, someone with a worse idea just
-              launched. They&apos;re getting signups. You&apos;re getting nothing.
-            </p>
-            <div className="mt-8 border-l-[3px] border-[#2D5A3D]">
-              <div className="border-t border-[#bdbdbd]" />
-              {[
-                'Been sitting on this idea for 3+ months?',
-                'Redesigned your logo more than once?',
-                "Built features nobody's asked for yet?",
-                'Waiting until it\'s "ready enough"?',
-                'Still in research mode?',
-              ].map((item) => (
-                <p key={item} className="type-body border-t border-[#bdbdbd] py-3 pl-4 text-[#1A1A1A]">- {item}</p>
-              ))}
+        <section id={SECTION_IDS[0]} data-ph-section={SECTION_IDS[0]} className="fade-section bg-[#EFEFEF] px-5 py-20 md:px-10">
+          <div className="grid w-full gap-10 lg:grid-cols-2 lg:items-center">
+            <div>
+              <p className="type-overline tracking-[0.14em] text-[#888888]">The Problem</p>
+              <h2 className="type-display mt-4">YOU&apos;RE NOT STUCK BECAUSE YOUR IDEA IS BAD.</h2>
+              <p className="type-body-lg mt-7 max-w-[560px] text-[#444444]">
+                You&apos;ve researched the market. You&apos;ve tweaked the name. You&apos;ve built the deck nobody asked for.
+                You&apos;re waiting to feel ready, but that feeling never comes. Meanwhile, someone with a worse idea just
+                launched. They&apos;re getting signups. You&apos;re getting nothing.
+              </p>
+
+              <div className="mt-8 space-y-1">
+                {[
+                  ["You don't have an idea problem.", 'You have a shipping problem.'],
+                  ['Validation comes from live signal.', 'Not endless planning.'],
+                  ['Launch speed beats polished drafts.', 'Especially the ones that never ship.'],
+                  ['The fastest path to clarity.', 'Get in front of real users.'],
+                ].map(([lead, rest]) => (
+                  <p key={lead} className="type-body pb-1 text-[#303030]">
+                    <span className="mr-1">&rarr;</span>
+                    <span className="font-bold">{lead}</span> {rest}
+                  </p>
+                ))}
+              </div>
             </div>
-            <p className="type-h3 mt-8 text-[#1A1A1A]">You don&apos;t have an idea problem. You have a shipping problem.</p>
+
+            <div className="w-full">
+              <div className="rounded-[22px] bg-[#E2E2E2] p-4 sm:p-6">
+                <div className="aspect-[16/10] w-full rounded-[14px] border border-[#D0D0D0] bg-[#D6D6D6] p-4 sm:p-6">
+                  <div className="flex h-full flex-col justify-between rounded-[10px] border border-dashed border-[#B8B8B8] bg-[#ECECEC] p-4 sm:p-6">
+                    <p className="type-overline text-[#888888]">DOCKET VISUAL SPACE</p>
+                    <p className="type-body text-[#666666]">
+                      Docket screenshots will be placed here.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
-        <section id={SECTION_IDS[1]} data-ph-section={SECTION_IDS[1]} className="fade-section bg-[#2D2D2D] px-5 py-16 text-[#F5F5F5] md:px-10">
-          <div className="max-w-6xl">
+        <section id={SECTION_IDS[1]} data-ph-section={SECTION_IDS[1]} className="fade-section bg-[#2D2D2D] px-5 py-20 text-[#F5F5F5] md:px-10">
+          <div className="w-full">
             <p className="type-overline tracking-[0.14em] text-[#888888]">The Process</p>
             <h2 className="type-h2 mt-4">HOW IT WORKS</h2>
-            <div className="mt-8 grid gap-0 md:grid-cols-3">
+            <div className="mt-10 grid gap-5 md:grid-cols-3">
               {[
                 ['01', 'Send us your idea', "Rough idea, messy notes, voice memo; it doesn't matter. Fill out a short application and tell us what you're building and who it's for."],
                 ['02', 'We build the launch system', 'In 48 hours we build a high-converting sales page, lead capture, waitlist or preorder flow, analytics, and a mobile-optimized funnel.'],
                 ['03', 'You launch. You validate.', 'Go live. Get signups. Find out if people actually want this, before you spend months building the wrong thing.'],
-              ].map(([n, t, d], i) => (
-                <div key={n} className={`py-6 ${i > 0 ? 'border-t md:border-l md:border-t-0 border-[#555555]' : ''} md:pl-6`}>
-                  <p className="headline-font text-6xl leading-none text-[#555555]">{n}</p>
+              ].map(([n, t, d]) => (
+                <div key={n} className="bg-[#383838] px-5 py-6">
+                  <p className="headline-font text-6xl leading-none text-[#5C5C5C]">{n}</p>
                   <p className="type-body-lg mt-4 font-bold text-[#F5F5F5]">{t}</p>
                   <p className="type-body mt-3 text-[#AAAAAA]">{d}</p>
                 </div>
@@ -369,64 +383,89 @@ function App() {
           </div>
         </section>
 
-        <section id={SECTION_IDS[2]} data-ph-section={SECTION_IDS[2]} className="fade-section bg-[#EFEFEF] px-5 py-16 md:px-10">
-          <div className="max-w-5xl">
-            <p className="type-overline tracking-[0.14em] text-[#888888]">Proof Of Execution</p>
-            <h2 className="type-h2 mt-4">FROM IDEA TO LIVE FUNNEL IN UNDER 48 HOURS.</h2>
-            <p className="type-body mt-3 text-[#888888]">How we launched Docket.</p>
-            <p className="type-body-lg mt-6 max-w-[520px] text-[#444444]">
-              Docket is a legal document management tool for Ugandan SMEs. The founder had the idea, knew the
-              problem, and had zero online presence. We built the entire launch system in 48 hours.
-            </p>
-            <div className="mt-8 border-l-[3px] border-[#2D5A3D]">
-              {[
-                'Mobile-first landing page with clear positioning',
-                'Preorder flow with low-friction CTA',
-                'Lead capture integrated and live',
-                'Analytics tracking from day one',
-                'TikTok-ready funnel entry point',
-              ].map((item) => (
-                <p key={item} className="type-body border-t border-[#bdbdbd] py-3 pl-4 text-[#1A1A1A]">- {item}</p>
-              ))}
+        <section id={SECTION_IDS[2]} data-ph-section={SECTION_IDS[2]} className="fade-section bg-[#EFEFEF] px-5 py-20 md:px-10">
+          <div className="grid w-full gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
+            <div>
+              <p className="type-overline tracking-[0.14em] text-[#888888]">Proof Of Execution</p>
+              <h2 className="type-h2 mt-4">FROM IDEA TO LIVE FUNNEL IN UNDER 48 HOURS.</h2>
+              <p className="type-body mt-3 text-[#888888]">How we launched Docket.</p>
+              <p className="type-body-lg mt-6 max-w-[520px] text-[#444444]">
+                Docket is a legal document management tool for Ugandan SMEs. The founder had the idea, knew the
+                problem, and had zero online presence. We built the entire launch system in 48 hours.
+              </p>
+              <p className="type-h3 mt-8 text-[#2D5A3D]">THAT&apos;S WHAT VALIDATION LOOKS LIKE.</p>
             </div>
-            <div className="type-caption mt-8 flex aspect-video w-full items-center justify-center bg-[#CCCCCC] text-center text-[#888888]">
-              [ Docket - Launch Page Screenshot ]
+
+            <div>
+              <div className="type-caption flex aspect-video w-full items-center justify-center bg-[#CCCCCC] text-center text-[#888888]">
+                [ Docket - Launch Page Screenshot ]
+              </div>
+              <div className="mt-6 grid gap-1 sm:grid-cols-2">
+                {[
+                  ['Mobile-first landing page', 'With clear positioning.'],
+                  ['Preorder flow', 'Built with a low-friction CTA.'],
+                  ['Lead capture', 'Integrated and live.'],
+                  ['Analytics tracking', 'Running from day one.'],
+                  ['Funnel entry point', 'Ready for TikTok traffic.'],
+                ].map(([lead, rest]) => (
+                  <p key={lead} className="type-body pb-1 text-[#1A1A1A]">
+                    <span className="mr-1">&rarr;</span>
+                    <span className="font-bold">{lead}</span> {rest}
+                  </p>
+                ))}
+              </div>
             </div>
-            <p className="type-h3 mt-8 text-[#2D5A3D]">THAT&apos;S WHAT VALIDATION LOOKS LIKE.</p>
           </div>
         </section>
 
-        <section id={SECTION_IDS[3]} data-ph-section={SECTION_IDS[3]} className="fade-section bg-[#2D2D2D] px-5 py-16 text-[#F5F5F5] md:px-10">
-          <div className="max-w-6xl">
+        <section id={SECTION_IDS[3]} data-ph-section={SECTION_IDS[3]} className="fade-section bg-[#2D2D2D] px-5 py-20 text-[#F5F5F5] md:px-10">
+          <div className="w-full">
             <p className="type-overline tracking-[0.14em] text-[#888888]">What You Get</p>
             <h2 className="type-h2 mt-4">EVERYTHING YOU NEED TO LAUNCH.<br/>NOTHING YOU DON&apos;T.</h2>
-            <div className="mt-8 grid md:grid-cols-2 md:gap-x-10">
-              {checklist.map((item) => (
-                <p key={item} className="type-body border-t border-[#555555] py-3"><span className="mr-2 text-[#2D5A3D]">OK</span>{item}</p>
+            <div className="mt-10 grid gap-x-10 gap-y-1 md:grid-cols-2">
+              {checklist.map(([lead, rest]) => (
+                <p key={lead} className="type-body pb-1 text-[#F5F5F5]">
+                  <span className="mr-1">&rarr;</span>
+                  <span className="font-bold">{lead}</span> {rest}
+                </p>
               ))}
             </div>
-            <div className="mt-0 bg-[#1A1A1A] px-6 py-9 md:px-10">
-              <p className="type-h2">DELIVERED IN 48 HOURS OR YOU PAY NOTHING.</p>
-              <p className="type-body mt-4 max-w-[480px] text-[#888888]">
-                No vague timelines. No chasing. If we miss the window, you get a full refund. No questions asked.
-              </p>
+            <div className="mt-12 grid gap-6 md:grid-cols-[1fr_auto] md:items-end">
+              <div>
+                <p className="type-h2">DELIVERED IN 48 HOURS OR YOU PAY NOTHING.</p>
+                <p className="type-body mt-4 max-w-[480px] text-[#888888]">
+                  No vague timelines. No chasing. If we miss the window, you get a full refund. No questions asked.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => openModal('offer_cta')}
+                className="type-caption inline-flex items-center gap-3 uppercase tracking-wide text-[#F5F5F5]"
+              >
+                <span>Start Your Sprint</span>
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#2D5A3D] text-[#F5F5F5]">?</span>
+              </button>
             </div>
           </div>
         </section>
 
-        <section id={SECTION_IDS[4]} data-ph-section={SECTION_IDS[4]} className="fade-section bg-[#EFEFEF] px-5 py-16 md:px-10">
-          <div className="max-w-5xl">
-            <h2 className="type-display">STOP PLANNING.<br/>START LAUNCHING.</h2>
-            <p className="type-body-lg mt-6 max-w-[460px] text-[#444444]">
-              Every day you don&apos;t launch is a day someone else validates the same idea.
-            </p>
-            <div className="mt-6 text-[#1A1A1A]">
-              <button type="button" onClick={() => openModal('hero_cta')} className="type-caption inline-flex items-center gap-3 uppercase tracking-wide">
-                <span>Apply For A Launch Sprint</span>
-                <span className="inline-flex h-10 w-10 items-center justify-center bg-[#2D5A3D] text-[#F5F5F5]">↗</span>
-              </button>
+        <section id={SECTION_IDS[4]} data-ph-section={SECTION_IDS[4]} className="fade-section bg-[#EFEFEF] px-5 py-20 md:px-10">
+          <div className="w-full">
+            <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
+              <div>
+                <h2 className="type-display">STOP PLANNING.<br/>START LAUNCHING.</h2>
+                <p className="type-body-lg mt-6 max-w-[520px] text-[#444444]">
+                  Every day you don&apos;t launch is a day someone else validates the same idea.
+                </p>
+              </div>
+              <div className="text-[#1A1A1A]">
+                <button type="button" onClick={() => openModal('hero_cta')} className="type-caption inline-flex items-center gap-3 uppercase tracking-wide">
+                  <span>Apply For A Launch Sprint</span>
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#2D5A3D] text-[#F5F5F5]">?</span>
+                </button>
+                <p className="type-body-sm mt-3 text-[#888888]">Applications take 3 minutes. We review within 24 hours.</p>
+              </div>
             </div>
-            <p className="type-body-sm mt-3 text-[#888888]">Applications take 3 minutes. We review within 24 hours.</p>
           </div>
         </section>
       </main>
@@ -474,7 +513,7 @@ function App() {
 
                 <button type="submit" className="form-submit" disabled={isSubmitting} data-ph-event="form_submitted">
                   <span>SEND APPLICATION</span>
-                  <span className="form-submit-circle">↗</span>
+                  <span className="form-submit-circle">?</span>
                 </button>
               </form>
             ) : (
