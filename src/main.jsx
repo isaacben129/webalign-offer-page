@@ -37,6 +37,33 @@ const CUSTOM_WEB_DESIGN_FROM = 'UGX 1M+'
 const LAUNCH_SPRINT_ANCHOR_PRICE = 'UGX 950K'
 const LAUNCH_SPRINT_DISCOUNT = 'UGX 200K'
 const DOCKET_PAGE_URL = 'https://docketapp.us'
+const WEBALIGN_HOME_URL = 'https://webalign.studio/'
+const WEBALIGN_PORTFOLIO_URL = 'https://webalign.studio/project/'
+const WEBALIGN_BLOG_URL = 'https://webalign.studio/blog/'
+const WEBALIGN_BEHANCE_URL = 'https://www.behance.net/webalignstudio'
+const PRIVACY_POLICY_URL = (import.meta.env.VITE_PRIVACY_POLICY_URL || '').trim()
+const FOOTER_COMPANY_LINKS = [
+  ['Home', WEBALIGN_HOME_URL],
+  ['Portfolio', WEBALIGN_PORTFOLIO_URL],
+  ['Blog', WEBALIGN_BLOG_URL],
+]
+const FOOTER_PORTFOLIO_LINKS = [['Behance', WEBALIGN_BEHANCE_URL]]
+
+function getOpenSprintSlotsFromEnv() {
+  const rawSlots = import.meta.env.VITE_OPEN_SPRINT_SLOTS
+  const parsedSlots = Number.parseInt(String(rawSlots ?? ''), 10)
+  if (!Number.isInteger(parsedSlots) || parsedSlots <= 0) return null
+  return parsedSlots
+}
+
+function CtaArrowIcon({ size = 16, strokeWidth = 1.8 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M4.5 11.5L11.5 4.5" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" />
+      <path d="M6.5 4.5H11.5V9.5" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
 
 function getInitialForm(formType) {
   if (formType === 'custom_web') return { ...INITIAL_CUSTOM_WEB_FORM }
@@ -50,6 +77,12 @@ function phCapture(eventName, properties = {}) {
 }
 
 function App() {
+  const openSprintSlots = getOpenSprintSlotsFromEnv()
+  const hasConfiguredOpenSprintSlots = openSprintSlots !== null
+  const openSprintAvailabilityText = hasConfiguredOpenSprintSlots
+    ? `sprint slot${openSprintSlots === 1 ? '' : 's'} open this week`
+    : 'Limited sprint capacity this week'
+
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalType, setModalType] = useState('launch_sprint')
   const [modalTrigger, setModalTrigger] = useState('')
@@ -304,7 +337,13 @@ function App() {
                     style={{ animation: 'heroPulse 2s infinite' }}
                   />
                   <span className="type-caption font-normal text-[#1A1A1A]">
-                    <span className="slot-count">1</span> sprint slot open this week
+                    {hasConfiguredOpenSprintSlots ? (
+                      <>
+                        <span className="slot-count">{openSprintSlots}</span> {openSprintAvailabilityText}
+                      </>
+                    ) : (
+                      openSprintAvailabilityText
+                    )}
                   </span>
                 </div>
 
@@ -594,7 +633,9 @@ function App() {
                   className="type-caption mt-5 inline-flex items-center gap-3 uppercase tracking-wide text-[#F5F5F5]"
                 >
                   <span>Book Launch Sprint - {LAUNCH_SPRINT_PRICE}</span>
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#2D5A3D] text-[#F5F5F5]">?</span>
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#2D5A3D] text-[#F5F5F5]">
+                    <CtaArrowIcon />
+                  </span>
                 </button>
               </div>
 
@@ -629,7 +670,9 @@ function App() {
                   className="type-caption mt-5 inline-flex items-center gap-3 uppercase tracking-wide text-[#F5F5F5]"
                 >
                   <span>Request Custom Web Quote</span>
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#2D5A3D] text-[#F5F5F5]">?</span>
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#2D5A3D] text-[#F5F5F5]">
+                    <CtaArrowIcon />
+                  </span>
                 </button>
               </div>
             </div>
@@ -651,7 +694,9 @@ function App() {
                 className="type-caption inline-flex items-center gap-3 uppercase tracking-wide text-[#F5F5F5]"
               >
                 <span>Start Your Project</span>
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#2D5A3D] text-[#F5F5F5]">?</span>
+                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#2D5A3D] text-[#F5F5F5]">
+                  <CtaArrowIcon />
+                </span>
               </button>
             </div>
           </div>
@@ -684,11 +729,17 @@ function App() {
               <div className="text-[#1A1A1A]">
                 <button
                   type="button"
-                  onClick={() => openModal('hero_cta')}
+                  data-ph-event="apply_cta_click"
+                  onClick={() => {
+                    phCapture('apply_cta_click', { location: 'final_cta' })
+                    openModal('final_cta')
+                  }}
                   className="type-caption inline-flex items-center gap-3 uppercase tracking-wide"
                 >
                   <span>Apply For A Launch Sprint</span>
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#2D5A3D] text-[#F5F5F5]">?</span>
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#2D5A3D] text-[#F5F5F5]">
+                    <CtaArrowIcon />
+                  </span>
                 </button>
                 <p className="type-body-sm mt-3 text-[#888888]">Applications take 3 minutes. We review within 24 hours.</p>
               </div>
@@ -706,29 +757,25 @@ function App() {
             loading="lazy"
             decoding="async"
           />
-          <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <p className="type-overline tracking-[0.1em] text-[#888888]">Company</p>
               <div className="mt-3 space-y-2">
-                <a href="#" className="type-body text-[#F5F5F5]">Home</a>
-                <a href="#" className="type-body block text-[#F5F5F5]">Portfolio</a>
-                <a href="#" className="type-body block text-[#F5F5F5]">Blog</a>
+                {FOOTER_COMPANY_LINKS.map(([label, href]) => (
+                  <a key={label} href={href} target="_blank" rel="noreferrer" className="type-body block text-[#F5F5F5]">
+                    {label}
+                  </a>
+                ))}
               </div>
             </div>
             <div>
               <p className="type-overline tracking-[0.1em] text-[#888888]">Portfolio</p>
               <div className="mt-3 space-y-2">
-                <a href="#" className="type-body text-[#F5F5F5]">Behance</a>
-                <a href="#" className="type-body block text-[#F5F5F5]">Dribbble</a>
-                <a href="#" className="type-body block text-[#F5F5F5]">Pinterest</a>
-              </div>
-            </div>
-            <div>
-              <p className="type-overline tracking-[0.1em] text-[#888888]">Social</p>
-              <div className="mt-3 space-y-2">
-                <a href="#" className="type-body text-[#F5F5F5]">X</a>
-                <a href="#" className="type-body block text-[#F5F5F5]">Whatsapp</a>
-                <a href="#" className="type-body block text-[#F5F5F5]">YouTube</a>
+                {FOOTER_PORTFOLIO_LINKS.map(([label, href]) => (
+                  <a key={label} href={href} target="_blank" rel="noreferrer" className="type-body block text-[#F5F5F5]">
+                    {label}
+                  </a>
+                ))}
               </div>
             </div>
             <div>
@@ -740,9 +787,13 @@ function App() {
             </div>
           </div>
           <div className="mt-8 border-t border-[#444444] pt-4">
-            <div className="flex items-center justify-between">
-              <p className="type-overline tracking-[0.08em] text-[#888888]">PRIVACY POLICY</p>
-              <p className="type-overline tracking-[0.08em] text-[#888888]">© WA 2025</p>
+            <div className={`flex items-center ${PRIVACY_POLICY_URL ? 'justify-between' : 'justify-end'}`}>
+              {PRIVACY_POLICY_URL && (
+                <a href={PRIVACY_POLICY_URL} target="_blank" rel="noreferrer" className="type-overline tracking-[0.08em] text-[#888888]">
+                  PRIVACY POLICY
+                </a>
+              )}
+              <p className="type-overline tracking-[0.08em] text-[#888888]">&copy; WA 2025</p>
             </div>
           </div>
         </div>
@@ -751,7 +802,7 @@ function App() {
       {isModalOpen && (
         <div className="form-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="form-modal-title">
           <div className="form-modal-panel">
-            <button type="button" className="form-modal-close" onClick={closeModal} aria-label="Close form">×</button>
+            <button type="button" className="form-modal-close" onClick={closeModal} aria-label="Close form">&times;</button>
 
             {!isSubmitted ? (
               <form className="form-shell" onSubmit={handleSubmit} noValidate>
@@ -850,7 +901,9 @@ function App() {
 
                 <button type="submit" className="form-submit" disabled={isSubmitting} data-ph-event="form_submitted">
                   <span>{isCustomWebForm ? 'SEND QUOTE REQUEST' : 'SEND APPLICATION'}</span>
-                  <span className="form-submit-circle">?</span>
+                  <span className="form-submit-circle">
+                    <CtaArrowIcon />
+                  </span>
                 </button>
               </form>
             ) : (
