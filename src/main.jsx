@@ -2,14 +2,28 @@ import React, { useEffect, useMemo, useState } from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'
 
-const INITIAL_FORM = {
+const INITIAL_LAUNCH_FORM = {
   fullName: '',
   email: '',
   idea: '',
   stage: '',
 }
 
+const INITIAL_CUSTOM_WEB_FORM = {
+  fullName: '',
+  email: '',
+  company: '',
+  currentSite: '',
+  projectType: '',
+  timeline: '',
+  budget: '',
+  goals: '',
+}
+
 const STAGES = ['Just an idea', 'Some early validation', 'Already building']
+const CUSTOM_WEB_PROJECT_TYPES = ['Brand-new website', 'Redesign an existing website', 'Landing page + sales funnel', 'Not sure yet']
+const CUSTOM_WEB_TIMELINES = ['ASAP (1-2 weeks)', 'This month', '1-2 months', 'Flexible timeline']
+const CUSTOM_WEB_BUDGETS = ['UGX 1M - 2M', 'UGX 2M - 4M', 'UGX 4M+', 'Need guidance']
 
 const SECTION_IDS = [
   'problem',
@@ -24,6 +38,11 @@ const LAUNCH_SPRINT_ANCHOR_PRICE = 'UGX 950K'
 const LAUNCH_SPRINT_DISCOUNT = 'UGX 200K'
 const DOCKET_PAGE_URL = 'https://docketapp.us'
 
+function getInitialForm(formType) {
+  if (formType === 'custom_web') return { ...INITIAL_CUSTOM_WEB_FORM }
+  return { ...INITIAL_LAUNCH_FORM }
+}
+
 function phCapture(eventName, properties = {}) {
   if (window.posthog && typeof window.posthog.capture === 'function') {
     window.posthog.capture(eventName, properties)
@@ -32,11 +51,14 @@ function phCapture(eventName, properties = {}) {
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [form, setForm] = useState(INITIAL_FORM)
+  const [modalType, setModalType] = useState('launch_sprint')
+  const [modalTrigger, setModalTrigger] = useState('')
+  const [form, setForm] = useState(INITIAL_LAUNCH_FORM)
   const [errors, setErrors] = useState({})
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [lastFieldTouched, setLastFieldTouched] = useState('')
+  const isCustomWebForm = modalType === 'custom_web'
 
   useEffect(() => {
     const revealObserver = new IntersectionObserver(
@@ -86,14 +108,17 @@ function App() {
     return () => timers.forEach((id) => window.clearTimeout(id))
   }, [])
 
-  const ideaChars = useMemo(() => form.idea.length, [form.idea])
+  const detailChars = useMemo(() => {
+    if (isCustomWebForm) return (form.goals || '').length
+    return (form.idea || '').length
+  }, [form.goals, form.idea, isCustomWebForm])
 
   const hasAnyFieldFilled = useMemo(
     () => Object.values(form).some((value) => String(value).trim().length > 0),
     [form]
   )
 
-  function validate(values) {
+  function validate(values, formType) {
     const nextErrors = {}
 
     if (!values.fullName.trim()) nextErrors.fullName = 'Please enter your name.'
@@ -103,36 +128,50 @@ function App() {
       nextErrors.email = 'Please enter a valid email address.'
     }
 
-    if (!values.idea.trim()) {
-      nextErrors.idea = 'Please share your idea.'
-    }
+    if (formType === 'custom_web') {
+      if (!values.company.trim()) nextErrors.company = 'Please enter your company or project name.'
+      if (!values.projectType) nextErrors.projectType = 'Please select your project type.'
+      if (!values.timeline) nextErrors.timeline = 'Please select your preferred timeline.'
+      if (!values.budget) nextErrors.budget = 'Please select your budget range.'
+      if (!values.goals.trim()) nextErrors.goals = 'Please share your project goals.'
+    } else {
+      if (!values.idea.trim()) {
+        nextErrors.idea = 'Please share your idea.'
+      }
 
-    if (!values.stage) {
-      nextErrors.stage = 'Please choose your current stage.'
+      if (!values.stage) {
+        nextErrors.stage = 'Please choose your current stage.'
+      }
     }
 
     return nextErrors
   }
 
-  function openModal(trigger) {
+  function openModal(trigger, formType = 'launch_sprint') {
+    setModalType(formType)
+    setModalTrigger(trigger)
+    setForm(getInitialForm(formType))
+    setErrors({})
+    setIsSubmitted(false)
     setIsModalOpen(true)
-    phCapture('form_opened', { trigger })
+    phCapture('form_opened', { trigger, form_type: formType })
   }
 
   function closeModal() {
     if (hasAnyFieldFilled && !isSubmitted) {
       phCapture('form_abandoned', {
         last_field_touched: lastFieldTouched || 'unknown',
+        form_type: modalType,
+        trigger: modalTrigger || 'unknown',
       })
     }
 
     setIsModalOpen(false)
+    setIsSubmitted(false)
     setErrors({})
-
-    if (!isSubmitted) {
-      setForm(INITIAL_FORM)
-      setLastFieldTouched('')
-    }
+    setForm(getInitialForm(modalType))
+    setLastFieldTouched('')
+    setModalTrigger('')
   }
 
   function updateField(field, value) {
@@ -144,7 +183,7 @@ function App() {
   async function handleSubmit(event) {
     event.preventDefault()
 
-    const nextErrors = validate(form)
+    const nextErrors = validate(form, modalType)
     setErrors(nextErrors)
 
     if (Object.keys(nextErrors).length > 0) return
@@ -155,7 +194,11 @@ function App() {
       const response = await fetch('/api/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          formType: modalType,
+          trigger: modalTrigger || 'unknown',
+        }),
       })
 
       const payload = await response.json().catch(() => ({}))
@@ -164,15 +207,16 @@ function App() {
         throw new Error(payload.error || 'Submission failed.')
       }
 
-      phCapture('form_submitted')
+      phCapture('form_submitted', { form_type: modalType, trigger: modalTrigger || 'unknown' })
       setIsSubmitted(true)
-      setForm(INITIAL_FORM)
+      setForm(getInitialForm(modalType))
 
       window.setTimeout(() => {
         setIsModalOpen(false)
         setIsSubmitted(false)
         setErrors({})
         setLastFieldTouched('')
+        setModalTrigger('')
       }, 4000)
     } catch (error) {
       setErrors((prev) => ({
@@ -225,6 +269,11 @@ function App() {
     ['Extra landing page variant', 'UGX 250K'],
     ['Email capture sequence setup', 'UGX 180K'],
     ['Priority 24-hour revision round', 'UGX 150K'],
+  ]
+  const testimonials = [
+    ['Founder, Docket', 'Web Align moved us from idea to a live funnel in two days. We stopped guessing and started getting real signal.'],
+    ['SaaS Operator', 'The messaging and offer clarity changed everything. We launched faster and the page converted better than our first draft.'],
+    ['Ecommerce Team', 'Fast turnaround, clean execution, and zero fluff. The launch sprint gave us momentum we could build on immediately.'],
   ]
 
   return (
@@ -575,7 +624,7 @@ function App() {
                   data-ph-event="apply_cta_click"
                   onClick={() => {
                     phCapture('apply_cta_click', { location: 'pricing_custom_web' })
-                    openModal('pricing_custom_web')
+                    openModal('pricing_custom_web', 'custom_web')
                   }}
                   className="type-caption mt-5 inline-flex items-center gap-3 uppercase tracking-wide text-[#F5F5F5]"
                 >
@@ -608,6 +657,21 @@ function App() {
           </div>
         </section>
 
+        <section data-ph-section="social_proof" className="fade-section bg-[#EFEFEF] px-5 py-20 md:px-10">
+          <div className="w-full">
+            <p className="type-overline tracking-[0.14em] text-[#888888]">Testimonials & Social Proof</p>
+            <h2 className="type-h2 mt-4">FOUNDERS TRUST US TO SHIP FAST.</h2>
+            <div className="mt-8 grid gap-8 md:grid-cols-3">
+              {testimonials.map(([name, quote]) => (
+                <div key={name}>
+                  <p className="type-body text-[#444444]">&quot;{quote}&quot;</p>
+                  <p className="type-overline mt-4 tracking-[0.08em] text-[#777777]">{name}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section id={SECTION_IDS[4]} data-ph-section={SECTION_IDS[4]} className="fade-section bg-[#EFEFEF] px-5 py-20 md:px-10">
           <div className="w-full">
             <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
@@ -633,14 +697,72 @@ function App() {
         </section>
       </main>
 
+      <footer className="bg-[#2D2D2D] px-5 pb-6 pt-10 md:px-10">
+        <div className="w-full">
+          <img
+            src="/images/carousel/WA logo mark white.svg"
+            alt="Web Align logo"
+            className="h-9 w-auto"
+            loading="lazy"
+            decoding="async"
+          />
+          <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <p className="type-overline tracking-[0.1em] text-[#888888]">Company</p>
+              <div className="mt-3 space-y-2">
+                <a href="#" className="type-body text-[#F5F5F5]">Home</a>
+                <a href="#" className="type-body block text-[#F5F5F5]">Portfolio</a>
+                <a href="#" className="type-body block text-[#F5F5F5]">Blog</a>
+              </div>
+            </div>
+            <div>
+              <p className="type-overline tracking-[0.1em] text-[#888888]">Portfolio</p>
+              <div className="mt-3 space-y-2">
+                <a href="#" className="type-body text-[#F5F5F5]">Behance</a>
+                <a href="#" className="type-body block text-[#F5F5F5]">Dribbble</a>
+                <a href="#" className="type-body block text-[#F5F5F5]">Pinterest</a>
+              </div>
+            </div>
+            <div>
+              <p className="type-overline tracking-[0.1em] text-[#888888]">Social</p>
+              <div className="mt-3 space-y-2">
+                <a href="#" className="type-body text-[#F5F5F5]">X</a>
+                <a href="#" className="type-body block text-[#F5F5F5]">Whatsapp</a>
+                <a href="#" className="type-body block text-[#F5F5F5]">YouTube</a>
+              </div>
+            </div>
+            <div>
+              <p className="type-overline tracking-[0.1em] text-[#888888]">Contacts</p>
+              <div className="mt-3 space-y-2">
+                <a href="mailto:hello@webalign.studio" className="type-body text-[#F5F5F5]">hello@webalign.studio</a>
+                <a href="tel:+256708349458" className="type-body block text-[#F5F5F5]">+256 708 349458</a>
+              </div>
+            </div>
+          </div>
+          <div className="mt-8 border-t border-[#444444] pt-4">
+            <div className="flex items-center justify-between">
+              <p className="type-overline tracking-[0.08em] text-[#888888]">PRIVACY POLICY</p>
+              <p className="type-overline tracking-[0.08em] text-[#888888]">© WA 2025</p>
+            </div>
+          </div>
+        </div>
+      </footer>
+
       {isModalOpen && (
         <div className="form-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="form-modal-title">
           <div className="form-modal-panel">
-            <button type="button" className="form-modal-close" onClick={closeModal} aria-label="Close form">X</button>
+            <button type="button" className="form-modal-close" onClick={closeModal} aria-label="Close form">×</button>
 
             {!isSubmitted ? (
               <form className="form-shell" onSubmit={handleSubmit} noValidate>
-                <h2 id="form-modal-title" className="headline-font form-title">Apply for a Launch Sprint</h2>
+                <h2 id="form-modal-title" className="headline-font form-title">
+                  {isCustomWebForm ? 'Request a Custom Web Quote' : 'Apply for a Launch Sprint'}
+                </h2>
+                <p className="form-subtitle">
+                  {isCustomWebForm
+                    ? 'Tell us your scope, timeline, and goals. We will send you a tailored plan.'
+                    : 'Share your idea and stage. We will respond within 24 hours.'}
+                </p>
 
                 <label className="form-label" htmlFor="fullName">FULL NAME</label>
                 <input id="fullName" className={`form-input ${errors.fullName ? 'is-error' : ''}`} value={form.fullName} onChange={(e) => updateField('fullName', e.target.value)} placeholder="Your name" />
@@ -650,40 +772,94 @@ function App() {
                 <input id="email" type="email" className={`form-input ${errors.email ? 'is-error' : ''}`} value={form.email} onChange={(e) => updateField('email', e.target.value)} placeholder="your@email.com" />
                 {errors.email && <p className="form-error">{errors.email}</p>}
 
-                <label className="form-label" htmlFor="idea">WHAT'S YOUR IDEA?</label>
-                <div className="form-textarea-wrap">
-                  <textarea id="idea" className={`form-input form-textarea ${errors.idea ? 'is-error' : ''}`} value={form.idea} onChange={(e) => updateField('idea', e.target.value.slice(0, 500))} placeholder="Describe it rough - a sentence or two is fine" maxLength={500} />
-                  <span className="form-counter">{ideaChars}/500</span>
-                </div>
-                {errors.idea && <p className="form-error">{errors.idea}</p>}
+                {isCustomWebForm ? (
+                  <>
+                    <label className="form-label" htmlFor="company">COMPANY / PROJECT NAME</label>
+                    <input id="company" className={`form-input ${errors.company ? 'is-error' : ''}`} value={form.company} onChange={(e) => updateField('company', e.target.value)} placeholder="Your brand or project name" />
+                    {errors.company && <p className="form-error">{errors.company}</p>}
 
-                <label className="form-label">WHERE ARE YOU AT?</label>
-                <div className="stage-toggle-row" role="radiogroup" aria-label="Where are you at?">
-                  {STAGES.map((stage) => (
-                    <button
-                      key={stage}
-                      type="button"
-                      className={`stage-toggle ${form.stage === stage ? 'is-active' : ''} ${errors.stage ? 'is-error' : ''}`}
-                      onClick={() => updateField('stage', stage)}
-                    >
-                      {stage}
-                    </button>
-                  ))}
-                </div>
-                {errors.stage && <p className="form-error">{errors.stage}</p>}
+                    <label className="form-label" htmlFor="currentSite">CURRENT WEBSITE (OPTIONAL)</label>
+                    <input id="currentSite" className="form-input" value={form.currentSite} onChange={(e) => updateField('currentSite', e.target.value)} placeholder="https://yourwebsite.com" />
+
+                    <div className="form-grid">
+                      <div>
+                        <label className="form-label" htmlFor="projectType">PROJECT TYPE</label>
+                        <select id="projectType" className={`form-input form-select ${errors.projectType ? 'is-error' : ''}`} value={form.projectType} onChange={(e) => updateField('projectType', e.target.value)}>
+                          <option value="">Select project type</option>
+                          {CUSTOM_WEB_PROJECT_TYPES.map((option) => (
+                            <option key={option} value={option}>{option}</option>
+                          ))}
+                        </select>
+                        {errors.projectType && <p className="form-error">{errors.projectType}</p>}
+                      </div>
+                      <div>
+                        <label className="form-label" htmlFor="timeline">TIMELINE</label>
+                        <select id="timeline" className={`form-input form-select ${errors.timeline ? 'is-error' : ''}`} value={form.timeline} onChange={(e) => updateField('timeline', e.target.value)}>
+                          <option value="">Select timeline</option>
+                          {CUSTOM_WEB_TIMELINES.map((option) => (
+                            <option key={option} value={option}>{option}</option>
+                          ))}
+                        </select>
+                        {errors.timeline && <p className="form-error">{errors.timeline}</p>}
+                      </div>
+                    </div>
+
+                    <label className="form-label" htmlFor="budget">BUDGET RANGE</label>
+                    <select id="budget" className={`form-input form-select ${errors.budget ? 'is-error' : ''}`} value={form.budget} onChange={(e) => updateField('budget', e.target.value)}>
+                      <option value="">Select budget range</option>
+                      {CUSTOM_WEB_BUDGETS.map((option) => (
+                        <option key={option} value={option}>{option}</option>
+                      ))}
+                    </select>
+                    {errors.budget && <p className="form-error">{errors.budget}</p>}
+
+                    <label className="form-label" htmlFor="goals">WHAT ARE YOU TRYING TO ACHIEVE?</label>
+                    <div className="form-textarea-wrap">
+                      <textarea id="goals" className={`form-input form-textarea ${errors.goals ? 'is-error' : ''}`} value={form.goals} onChange={(e) => updateField('goals', e.target.value.slice(0, 700))} placeholder="Goals, target users, pages you need, and what success looks like." maxLength={700} />
+                      <span className="form-counter">{detailChars}/700</span>
+                    </div>
+                    {errors.goals && <p className="form-error">{errors.goals}</p>}
+                  </>
+                ) : (
+                  <>
+                    <label className="form-label" htmlFor="idea">WHAT'S YOUR IDEA?</label>
+                    <div className="form-textarea-wrap">
+                      <textarea id="idea" className={`form-input form-textarea ${errors.idea ? 'is-error' : ''}`} value={form.idea} onChange={(e) => updateField('idea', e.target.value.slice(0, 500))} placeholder="Describe it rough - a sentence or two is fine" maxLength={500} />
+                      <span className="form-counter">{detailChars}/500</span>
+                    </div>
+                    {errors.idea && <p className="form-error">{errors.idea}</p>}
+
+                    <label className="form-label">WHERE ARE YOU AT?</label>
+                    <div className="stage-toggle-row" role="radiogroup" aria-label="Where are you at?">
+                      {STAGES.map((stage) => (
+                        <button
+                          key={stage}
+                          type="button"
+                          className={`stage-toggle ${form.stage === stage ? 'is-active' : ''} ${errors.stage ? 'is-error' : ''}`}
+                          onClick={() => updateField('stage', stage)}
+                        >
+                          {stage}
+                        </button>
+                      ))}
+                    </div>
+                    {errors.stage && <p className="form-error">{errors.stage}</p>}
+                  </>
+                )}
 
                 {errors.submit && <p className="form-error">{errors.submit}</p>}
 
                 <button type="submit" className="form-submit" disabled={isSubmitting} data-ph-event="form_submitted">
-                  <span>SEND APPLICATION</span>
+                  <span>{isCustomWebForm ? 'SEND QUOTE REQUEST' : 'SEND APPLICATION'}</span>
                   <span className="form-submit-circle">?</span>
                 </button>
               </form>
             ) : (
               <div className="form-confirmation" aria-live="polite">
-                <h3 className="headline-font">YOU'RE IN THE QUEUE.</h3>
+                <h3 className="headline-font">{isCustomWebForm ? 'REQUEST RECEIVED.' : "YOU'RE IN THE QUEUE."}</h3>
                 <p>
-                  We'll review your application and get back to you within 24 hours. Check your email - and your spam folder just in case.
+                  {isCustomWebForm
+                    ? 'Thanks. We will review your requirements and send a tailored next step within 24 hours.'
+                    : "We'll review your application and get back to you within 24 hours. Check your email - and your spam folder just in case."}
                 </p>
               </div>
             )}
