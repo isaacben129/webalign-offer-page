@@ -22,6 +22,7 @@ const LAUNCH_SPRINT_PRICE = 'UGX 750K'
 const CUSTOM_WEB_DESIGN_FROM = 'UGX 1M+'
 const LAUNCH_SPRINT_ANCHOR_PRICE = 'UGX 950K'
 const LAUNCH_SPRINT_DISCOUNT = 'UGX 200K'
+const DOCKET_PAGE_URL = 'https://docketapp.us'
 
 function phCapture(eventName, properties = {}) {
   if (window.posthog && typeof window.posthog.capture === 'function') {
@@ -186,12 +187,9 @@ function App() {
   const heroCarouselItems = [
     { name: 'WebAlign', category: 'Studio', ratio: '3 / 2', height: 220, src: '/images/carousel/mix-webalign.webp', position: 'center 24%', fit: 'cover' },
     { name: 'Docket', category: 'Hero', ratio: '3 / 2', height: 232, src: '/images/carousel/docket-01.webp', position: 'center 20%', fit: 'cover' },
-    { name: 'Haven', category: 'Landing', ratio: '3 / 2', height: 242, src: '/images/carousel/mix-haven.webp', position: 'center 20%', fit: 'cover' },
-    { name: 'Docket', category: 'Three Steps', ratio: '3 / 2', height: 226, src: '/images/carousel/docket-05.webp', position: 'center 35%', fit: 'cover' },
-    { name: 'FapCount', category: 'Feature', ratio: '3 / 2', height: 236, src: '/images/carousel/mix-fapcount.webp', position: 'center 20%', fit: 'cover' },
-    { name: 'Docket', category: 'Mobile Overview', ratio: '3 / 2', height: 222, src: '/images/carousel/docket-06.webp', position: 'center 18%', fit: 'cover' },
+    { name: 'FapCount', category: 'Feature', ratio: '16 / 9', height: 242, src: '/images/carousel/Screenshot 2026-05-15 171205.png', position: 'center top', fit: 'cover', zoom: 1.04 },
+    { name: 'Docket', category: 'Pricing', ratio: '1 / 1', height: 300, src: '/images/carousel/Screenshot 2026-05-15 170440.png', position: 'center center', fit: 'cover' },
     { name: 'Cherry', category: 'Hero', ratio: '3 / 2', height: 240, src: '/images/carousel/mix-cherry.webp', position: 'center 24%', fit: 'cover' },
-    { name: 'Docket', category: 'Landing Hero', ratio: '1 / 1', height: 300, src: '/images/carousel/docket-08.webp', position: 'center top', fit: 'cover' },
   ]
   const heroCarouselLoop = [...heroCarouselItems, ...heroCarouselItems]
   const checklist = [
@@ -248,9 +246,6 @@ function App() {
             <div className="flex items-center justify-between gap-6">
               <div className="flex items-center gap-3">
                 <span className="type-overline font-normal text-[#888888]">LAUNCH SPRINT</span>
-                <span className="type-overline rounded-full border border-[#D0D0D0] bg-[#E6E6E6] px-3 py-1 font-medium tracking-[0.06em] text-[#1A1A1A]">
-                  FIXED {LAUNCH_SPRINT_PRICE}
-                </span>
               </div>
 
               <div className="flex items-center gap-6">
@@ -271,7 +266,7 @@ function App() {
                     phCapture('apply_cta_click', { location: 'nav' })
                     openModal('nav_cta')
                   }}
-                  className="type-caption inline-flex items-center rounded-full bg-[#1A1A1A] px-[18px] py-[9px] font-medium tracking-[0.04em] text-[#F5F5F5]"
+                  className="type-caption inline-flex items-center whitespace-nowrap rounded-full bg-[#1A1A1A] px-[18px] py-[9px] font-medium tracking-[0.04em] text-[#F5F5F5]"
                 >
                   Apply now
                 </button>
@@ -289,7 +284,7 @@ function App() {
               YOUR IDEA IS WORTHLESS UNTIL IT&apos;S LIVE.
             </h1>
 
-            <div className="mt-[clamp(24px,4vh,48px)] flex w-full max-w-[820px] flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+            <div className="mt-[clamp(12px,2.5vh,28px)] flex w-full max-w-[820px] flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
               <p className="type-body-sm max-w-[420px] font-light text-[#555555]">
                 We turn rough startup ideas into launch-ready validation funnels in 48 hours - sales page, waitlist,
                 preorder flow, lead capture, and analytics. Everything to go live and get real signal for a fixed
@@ -315,7 +310,9 @@ function App() {
                     </svg>
                   </span>
                 </button>
-                <p className="type-overline mt-2 font-light normal-case tracking-normal text-[#999999]">Delivered in 48 hours or you pay nothing.</p>
+                <p className="type-overline mt-2 max-w-[320px] font-light normal-case leading-[1.35] tracking-[0.01em] text-[#7A7A7A] lg:text-right">
+                  Delivered in 48 hours or you pay nothing.
+                </p>
               </div>
             </div>
 
@@ -325,7 +322,7 @@ function App() {
                 style={{ animation: 'heroCarouselScroll 18s linear infinite' }}
               >
                 {heroCarouselLoop.map((item, index) => {
-                  const { name, category, ratio, height, src, position, fit } = item
+                  const { name, category, ratio, height, src, position, fit, zoom } = item
                   const itemNumber = index + 1
                   let background = '#D8D8D4'
                   if (itemNumber % 4 === 0) background = '#E8E4DC'
@@ -337,7 +334,7 @@ function App() {
                   return (
                     <div
                       key={`${name}-${category}-${index}`}
-                      className="relative flex-shrink-0 overflow-hidden rounded-[6px] border border-[#D7D7D1] shadow-[0_8px_22px_rgba(0,0,0,0.14)]"
+                      className="relative flex-shrink-0 overflow-hidden rounded-[6px] border border-[#D7D7D1]"
                       style={{
                         backgroundColor: background,
                         aspectRatio: ratio,
@@ -348,7 +345,11 @@ function App() {
                         src={src}
                         alt={`${name} ${category} screenshot`}
                         className={`h-full w-full bg-[#EDEDE8] ${fit === 'contain' ? 'object-contain' : 'object-cover'}`}
-                        style={{ objectPosition: position || 'center center' }}
+                        style={{
+                          objectPosition: position || 'center center',
+                          transform: zoom ? `scale(${zoom})` : undefined,
+                          transformOrigin: zoom ? 'top center' : undefined,
+                        }}
                         loading="lazy"
                         decoding="async"
                       />
@@ -403,6 +404,13 @@ function App() {
                   loading="lazy"
                   decoding="async"
                 />
+                <a
+                  href={`#${SECTION_IDS[2]}`}
+                  className="type-overline absolute left-3 top-3 inline-flex items-center gap-2 rounded-full border border-[#2D5A3D] bg-[#1F3D2A] px-4 py-2 tracking-[0.06em] text-[#F5F5F5] transition-colors hover:bg-[#2D5A3D]"
+                >
+                  See how we helped Docket launch
+                  <span aria-hidden="true">&rarr;</span>
+                </a>
               </div>
             </div>
           </div>
@@ -433,16 +441,41 @@ function App() {
             <div>
               <p className="type-overline tracking-[0.14em] text-[#888888]">Proof Of Execution</p>
               <h2 className="type-h2 mt-4">FROM IDEA TO LIVE FUNNEL IN UNDER 48 HOURS.</h2>
-              <p className="type-body mt-3 text-[#888888]">How we launched Docket.</p>
-              <p className="type-body-lg mt-6 max-w-[520px] text-[#444444]">
-                Docket is a legal document management tool for Ugandan SMEs. The founder had the idea, knew the
-                problem, and had zero online presence. We built the entire launch system in 48 hours.
+              <p className="type-body mt-3 text-[#888888]">
+                How we launched{' '}
+                <a href={DOCKET_PAGE_URL} target="_blank" rel="noreferrer" className="underline decoration-[1.5px] underline-offset-2">
+                  Docket
+                </a>
+                .
               </p>
-              <p className="type-h3 mt-8 text-[#2D5A3D]">THAT&apos;S WHAT VALIDATION LOOKS LIKE.</p>
+              <p className="type-body-lg mt-6 max-w-[520px] text-[#444444]">
+                <a href={DOCKET_PAGE_URL} target="_blank" rel="noreferrer" className="font-semibold underline decoration-[1.5px] underline-offset-2">
+                  Docket
+                </a>{' '}
+                is a legal document management tool for Ugandan SMEs. The founder had the idea, knew the problem, and
+                had zero online presence. We built the entire launch system in 48 hours.
+              </p>
+              <div className="mt-6 grid gap-1 sm:grid-cols-1">
+                {[
+                  ['Mobile-first landing page', 'Clear positioning and offer framing.'],
+                  ['Preorder capture flow', 'Low-friction CTA with intent tracking.'],
+                  ['Analytics from day one', 'Funnel visibility to guide iteration.'],
+                ].map(([lead, rest]) => (
+                  <p key={lead} className="type-body pb-1 text-[#1A1A1A]">
+                    <span className="mr-1">&rarr;</span>
+                    <span className="font-bold">{lead}</span> {rest}
+                  </p>
+                ))}
+              </div>
             </div>
 
             <div>
-              <div className="relative aspect-video w-full overflow-hidden rounded-[6px] border border-[#D7D7D1] bg-[#E9E9E3]">
+              <a
+                href={DOCKET_PAGE_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="relative block aspect-video w-full overflow-hidden rounded-[6px] border border-[#D7D7D1] bg-[#E9E9E3]"
+              >
                 <img
                   src="/images/carousel/docket-01.webp"
                   alt="Docket launch page screenshot"
@@ -451,19 +484,17 @@ function App() {
                   loading="lazy"
                   decoding="async"
                 />
-              </div>
-              <div className="mt-6 grid gap-1 sm:grid-cols-2">
+              </a>
+              <div className="mt-7 grid gap-6 sm:grid-cols-3">
                 {[
-                  ['Mobile-first landing page', 'With clear positioning.'],
-                  ['Preorder flow', 'Built with a low-friction CTA.'],
-                  ['Lead capture', 'Integrated and live.'],
-                  ['Analytics tracking', 'Running from day one.'],
-                  ['Funnel entry point', 'Ready for TikTok traffic.'],
-                ].map(([lead, rest]) => (
-                  <p key={lead} className="type-body pb-1 text-[#1A1A1A]">
-                    <span className="mr-1">&rarr;</span>
-                    <span className="font-bold">{lead}</span> {rest}
-                  </p>
+                  ['604', 'First page views'],
+                  ['1.32%', 'Preorder conversion'],
+                  ['3m 17s', 'Avg. time to convert'],
+                ].map(([value, label]) => (
+                  <div key={label}>
+                    <p className="type-h3 leading-[1] text-[#1A1A1A]">{value}</p>
+                    <p className="type-overline mt-2 tracking-[0.06em] text-[#777777]">{label}</p>
+                  </div>
                 ))}
               </div>
             </div>
