@@ -32,7 +32,7 @@ const SECTION_IDS = [
   'offer',
   'final_cta',
 ]
-const LAUNCH_SPRINT_PRICE = 'UGX 750K'
+const LAUNCH_SPRINT_PRICE = 'UGX 250K'
 const CUSTOM_WEB_DESIGN_FROM = 'UGX 1M+'
 const LAUNCH_SPRINT_ANCHOR_PRICE = 'UGX 950K'
 const LAUNCH_SPRINT_DISCOUNT = 'UGX 200K'
@@ -524,6 +524,9 @@ function App() {
           <div className="w-full">
             <p className="type-overline tracking-[0.14em] text-[#888888]">The Process</p>
             <h2 className="type-h2 mt-4">Three steps. 48 hours. Done.</h2>
+            <p className="type-body mt-4 max-w-[480px] text-[var(--text-muted)]">
+              We&apos;ve done this before. Docket went from a paragraph and a gut feeling to a live page with 604 visitors and real preorder interest. In 48 hours.
+            </p>
             <div className="mt-10 grid gap-5 md:grid-cols-3">
               {[
                 [
@@ -631,16 +634,16 @@ function App() {
                 <p className="type-overline text-[#8FAE99]">BEST FOR FAST VALIDATION</p>
                 <h3 className="type-h3 mt-2 text-[#F5F5F5]">Launch Sprint</h3>
                 <div className="mt-3 flex items-end gap-3">
-                  <p className="type-h2 text-[#F5F5F5]">UGX 750K</p>
-                  <p className="type-body pb-1 text-[#888888] line-through">UGX 950K</p>
+                  <p className="type-h2 text-[#F5F5F5]">UGX 250K</p>
+                  <p className="pb-1" style={{ fontFamily: 'Poppins', fontSize: '12px', color: 'var(--green)' }}>Increases to UGX 500K after this week.</p>
                 </div>
-                <p className="type-body mt-3 text-[#AAAAAA]">Best for founders who need to stop planning and start finding out.</p>
+                <p className="type-body mt-3 text-[#AAAAAA]">Best for founders who need to stop planning and start finding out. Same full sprint, same deliverables — this is what it costs before everyone knows about it.</p>
                 <div className="mt-4 space-y-1">
-                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>High-converting landing page designed and built</p>
-                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Offer and messaging positioned for validation</p>
-                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Lead capture and waitlist/preorder flow setup</p>
-                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>PostHog or GA baseline analytics integration</p>
-                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Mobile optimisation and launch QA pass</p>
+                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>A landing page built to get signups</p>
+                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Simple, clear messaging for your offer</p>
+                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>A waitlist or preorder flow set up for you</p>
+                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Basic analytics so you can track results</p>
+                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Mobile checks and launch QA before going live</p>
                 </div>
                 <p className="type-overline mt-5 text-[#8FAE99]">INCLUDED FREE:</p>
                 <div className="mt-2 space-y-1">
@@ -657,7 +660,7 @@ function App() {
                   }}
                   className="type-caption mt-5 inline-flex items-center gap-3 uppercase tracking-wide text-[#F5F5F5]"
                 >
-                  <span>CLAIM MY SPRINT SLOT - UGX 750K</span>
+                  <span>CLAIM MY SPRINT SLOT — UGX 250K</span>
                   <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#2D5A3D] text-[#F5F5F5]">
                     <CtaArrowIcon />
                   </span>
@@ -668,13 +671,13 @@ function App() {
                 <p className="type-overline text-[#888888]">FOR BIGGER BUILDS</p>
                 <h3 className="type-h3 mt-2 text-[#F5F5F5]">Custom Web Design</h3>
                 <p className="type-h2 mt-3 text-[#F5F5F5]">FROM UGX 1M+</p>
-                <p className="type-body mt-3 text-[#AAAAAA]">Best for teams that need custom scope, more pages, and deeper design systems.</p>
+                <p className="type-body mt-3 text-[#AAAAAA]">Best for teams that need more than a sprint. If you need a bigger site, more pages, and a stronger brand system, we plan and build it with you from start to launch.</p>
                 <div className="mt-4 space-y-1">
-                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Custom design direction and page architecture</p>
-                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Multi-page responsive website build</p>
-                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Conversion-focused copy and CTA structure</p>
-                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Technical SEO basics and performance setup</p>
-                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Scalable handoff for future growth</p>
+                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>A custom look and structure for your site</p>
+                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>A full multi-page website that works on all screens</p>
+                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Clear copy and calls to action on each page</p>
+                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Basic SEO and speed setup</p>
+                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>A handoff your team can easily keep building on</p>
                 </div>
                 <p className="type-overline mt-5 text-[#888888]">HELPING YOU GROW:</p>
                 <div className="mt-2 space-y-1">
@@ -712,7 +715,7 @@ function App() {
               <div>
                 <p className="type-h3 text-[#F5F5F5]">DELIVERED IN 48 HOURS OR YOU PAY NOTHING.</p>
                 <p className="type-body mt-3 max-w-[600px] text-[#AAAAAA]">
-                  If we don&apos;t deliver within 48 hours, you pay nothing. Full refund, no questions. We only take on sprints we know we can ship - which is why we cap it at one per week.
+                  If we don&apos;t deliver within 48 hours, you pay nothing. Full refund, no questions. We only take on sprints we know we can ship - which is why we cap it at one per week. And if nobody signs up after you launch — that&apos;s not failure. That&apos;s the cheapest possible way to find out what needs to change. Either way, you&apos;re further along than you were.
                 </p>
               </div>
               <button
@@ -736,15 +739,12 @@ function App() {
 
         <section data-ph-section="social_proof" className="fade-section bg-[#EFEFEF] px-5 py-20 md:px-10">
           <div className="w-full">
-            <p className="type-overline tracking-[0.14em] text-[#888888]">Testimonials & Social Proof</p>
-            <h2 className="type-h2 mt-4">FOUNDERS TRUST US TO SHIP FAST.</h2>
-            <div className="mt-8 grid gap-8 md:grid-cols-3">
-              {testimonials.map(([name, quote]) => (
-                <div key={name}>
-                  <p className="type-body text-[#444444]">&quot;{quote}&quot;</p>
-                  <p className="type-overline mt-4 tracking-[0.08em] text-[#777777]">{name}</p>
-                </div>
-              ))}
+            <div className="mx-auto max-w-[640px] text-center">
+              <p className="type-overline tracking-[0.14em] text-[var(--text-muted)]">WHAT HAPPENS AFTER 48 HOURS</p>
+              <p className="type-body-lg mt-8 text-[#444444]" style={{ fontStyle: 'italic', fontWeight: 300, lineHeight: 1.8 }}>
+                &quot;[REAL TESTIMONIAL GOES HERE]&quot;
+              </p>
+              <span className="type-caption mt-4 block text-[var(--text-muted)]">— [Name], [Company]</span>
             </div>
           </div>
         </section>
@@ -789,7 +789,8 @@ function App() {
             loading="lazy"
             decoding="async"
           />
-          <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <span className="type-body mt-4 mb-8 block max-w-[520px] text-[#888888]">Built and run by Isaac - Web Align, Kampala.</span>
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <p className="type-overline tracking-[0.1em] text-[#888888]">Company</p>
               <div className="mt-3 space-y-2">
