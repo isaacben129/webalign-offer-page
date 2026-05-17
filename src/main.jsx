@@ -22,7 +22,7 @@ const INITIAL_CUSTOM_WEB_FORM = {
 
 const STAGES = ['Just an idea', 'Some early validation', 'Already building']
 const CUSTOM_WEB_PROJECT_TYPES = ['Brand-new website', 'Redesign an existing website', 'Landing page + sales funnel', 'Not sure yet']
-const CUSTOM_WEB_TIMELINES = ['ASAP (1-2 weeks)', 'This month', '1-2 months', 'Flexible timeline']
+const CUSTOM_WEB_TIMELINES = ['48 hours', 'ASAP (1-2 weeks)', 'This month', '1-2 months', 'Flexible timeline']
 const CUSTOM_WEB_BUDGETS = ['UGX 1M - 2M', 'UGX 2M - 4M', 'UGX 4M+', 'Need guidance']
 
 const SECTION_IDS = [
@@ -369,14 +369,13 @@ function App() {
               className="type-hero mt-[clamp(28px,4.5vh,56px)] w-full max-w-full text-[#1A1A1A] md:max-w-[80%] lg:max-w-[58%]"
               style={{ marginBottom: 'clamp(10px, 1.75vh, 18px)' }}
             >
-              YOUR IDEA IS WORTHLESS UNTIL IT&apos;S LIVE.
+              GO FROM IDEA TO FIRST SIGNUP IN 48 HOURS.
             </h1>
 
             <div className="mt-[clamp(12px,2.5vh,28px)] flex w-full max-w-[820px] flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
               <p className="type-body-sm max-w-[420px] font-light text-[#555555]">
-                We turn rough startup ideas into launch-ready validation funnels in 48 hours - sales page, waitlist,
-                preorder flow, lead capture, and analytics. Everything to go live and get real signal for a fixed
-                price of {LAUNCH_SPRINT_PRICE}.
+                You bring the idea. We handle the page, the funnel, the copy, the setup. 48 hours later you&apos;re
+                live and finding out if people actually want this.
               </p>
 
               <div className="lg:self-end">
@@ -390,7 +389,7 @@ function App() {
                   className="type-caption inline-flex items-center gap-3 uppercase tracking-[0.07em] text-[#1A1A1A]"
                   aria-label="Apply for a launch sprint"
                 >
-                  <span className="font-medium">APPLY FOR A LAUNCH SPRINT</span>
+                  <span className="font-medium">CLAIM MY SPRINT SLOT</span>
                   <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#2D5A3D] text-[#F5F5F5]">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                       <path d="M4.5 11.5L11.5 4.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
@@ -399,7 +398,7 @@ function App() {
                   </span>
                 </button>
                 <p className="type-overline mt-2 max-w-[320px] font-light normal-case leading-[1.35] tracking-[0.01em] text-[#7A7A7A] lg:text-right">
-                  Delivered in 48 hours or you pay nothing.
+                  48 hours. Or you pay nothing.
                 </p>
               </div>
             </div>
@@ -460,23 +459,40 @@ function App() {
           <div className="grid w-full gap-10 lg:grid-cols-2 lg:items-center">
             <div>
               <p className="type-overline tracking-[0.14em] text-[#888888]">The Problem</p>
-              <h2 className="type-h2 mt-4">YOU&apos;RE NOT STUCK BECAUSE YOUR IDEA IS BAD.</h2>
+              <h2 className="type-h2 mt-4">You&apos;re not stuck because your idea is bad.</h2>
               <p className="type-body-lg mt-7 max-w-[560px] text-[#444444]">
-                You&apos;ve researched the market. You&apos;ve tweaked the name. You&apos;ve built the deck nobody asked for.
-                You&apos;re waiting to feel ready, but that feeling never comes. Meanwhile, someone with a worse idea just
-                launched. They&apos;re getting signups. You&apos;re getting nothing.
+                It&apos;s not that you&apos;re not working. It&apos;s that the work you&apos;re doing can&apos;t answer the only
+                question that matters - do people actually want this. There&apos;s a version of this where you spend
+                six more months refining something nobody has seen. And a version where you find out in 48 hours. Both
+                start today.
               </p>
+
+              <button
+                type="button"
+                data-ph-event="apply_cta_click"
+                onClick={() => {
+                  phCapture('apply_cta_click', { location: 'problem_cta' })
+                  openModal('problem_cta')
+                }}
+                className="type-caption mt-7 inline-flex items-center gap-3 uppercase tracking-[0.07em] text-[#1A1A1A]"
+              >
+                <span className="font-medium">CLAIM MY SPRINT SLOT</span>
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#2D5A3D] text-[#F5F5F5]">
+                  <CtaArrowIcon />
+                </span>
+              </button>
 
               <div className="mt-8 space-y-1">
                 {[
-                  ["You don't have an idea problem.", 'You have a shipping problem.'],
-                  ['Validation comes from live signal.', 'Not endless planning.'],
-                  ['Launch speed beats polished drafts.', 'Especially the ones that never ship.'],
-                  ['The fastest path to clarity.', 'Get in front of real users.'],
-                ].map(([lead, rest]) => (
-                  <p key={lead} className="type-body pb-1 text-[#303030]">
+                  "You've been working on this for months. Nothing is live.",
+                  "You know the market. You've done the research. You haven't shipped.",
+                  'The logo has had three versions. The landing page has had zero.',
+                  "You tell yourself you'll launch when it's ready. It's never ready.",
+                  "You've explained the idea to ten people. None of them can sign up for it.",
+                ].map((item) => (
+                  <p key={item} className="type-body pb-1 text-[#303030]">
                     <span className="mr-1">&rarr;</span>
-                    <span className="font-bold">{lead}</span> {rest}
+                    <span>{item}</span>
                   </p>
                 ))}
               </div>
@@ -507,17 +523,33 @@ function App() {
         <section id={SECTION_IDS[1]} data-ph-section={SECTION_IDS[1]} className="fade-section bg-[#2D2D2D] px-5 py-20 text-[#F5F5F5] md:px-10">
           <div className="w-full">
             <p className="type-overline tracking-[0.14em] text-[#888888]">The Process</p>
-            <h2 className="type-h2 mt-4">HOW IT WORKS</h2>
+            <h2 className="type-h2 mt-4">Three steps. 48 hours. Done.</h2>
             <div className="mt-10 grid gap-5 md:grid-cols-3">
               {[
-                ['01', 'Send us your idea', "Rough idea, messy notes, voice memo; it doesn't matter. Fill out a short application and tell us what you're building and who it's for."],
-                ['02', 'We build the launch system', 'In 48 hours we build a high-converting sales page, lead capture, waitlist or preorder flow, analytics, and a mobile-optimized funnel.'],
-                ['03', 'You launch. You validate.', 'Go live. Get signups. Find out if people actually want this, before you spend months building the wrong thing.'],
-              ].map(([n, t, d]) => (
+                [
+                  '01',
+                  'Send us your idea',
+                  "Rough notes, a voice memo, a napkin sketch - it doesn't matter. Fill out a short application and tell us what you're building and who it's for. We've launched ideas that were a paragraph and a gut feeling. That's enough.",
+                  'Day 0',
+                ],
+                [
+                  '02',
+                  'We build the launch system',
+                  "We build the whole thing. Sales page, lead capture, waitlist or preorder flow, analytics. Written, designed, and live. You don't touch a single line of code.",
+                  'Hour 1-48',
+                ],
+                [
+                  '03',
+                  'You launch. You find out.',
+                  'You share it. You watch what happens. You find out in days what would have taken months to guess.',
+                  'Hour 48',
+                ],
+              ].map(([n, t, d, tag]) => (
                 <div key={n} className="rounded-[4px] bg-[#383838] px-5 py-6">
                   <p className="headline-font text-6xl leading-none text-[#5C5C5C]">{n}</p>
                   <p className="type-body-lg mt-4 font-bold text-[#F5F5F5]">{t}</p>
                   <p className="type-body mt-3 text-[#AAAAAA]">{d}</p>
+                  <p className="type-overline mt-4 tracking-[0.08em] text-[#8FAE99]">{tag}</p>
                 </div>
               ))}
             </div>
@@ -528,26 +560,22 @@ function App() {
           <div className="grid w-full gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
             <div>
               <p className="type-overline tracking-[0.14em] text-[#888888]">Proof Of Execution</p>
-              <h2 className="type-h2 mt-4">FROM IDEA TO LIVE FUNNEL IN UNDER 48 HOURS.</h2>
+              <h2 className="type-h2 mt-4">Docket. 48 hours. Here&apos;s what happened.</h2>
               <p className="type-body mt-3 text-[#888888]">
-                How we launched{' '}
-                <a href={DOCKET_PAGE_URL} target="_blank" rel="noreferrer" className="underline decoration-[1.5px] underline-offset-2">
-                  Docket
-                </a>
-                .
+                Docket started as a simple observation, people lose money every day on things they&apos;ve already
+                bought. Return windows expire. Warranties go unfiled. Deductibles get forgotten. The question was
+                whether anyone would pay for a solution before it existed.
               </p>
               <p className="type-body-lg mt-6 max-w-[520px] text-[#444444]">
-                <a href={DOCKET_PAGE_URL} target="_blank" rel="noreferrer" className="font-semibold underline decoration-[1.5px] underline-offset-2">
-                  Docket
-                </a>{' '}
-                is a legal document management tool for Ugandan SMEs. The founder had the idea, knew the problem, and
-                had zero online presence. We built the entire launch system in 48 hours.
+                We built the entire launch system in 48 hours to find out.
               </p>
               <div className="mt-6 grid gap-1 sm:grid-cols-1">
                 {[
-                  ['Mobile-first landing page', 'Clear positioning and offer framing.'],
-                  ['Preorder capture flow', 'Low-friction CTA with intent tracking.'],
-                  ['Analytics from day one', 'Funnel visibility to guide iteration.'],
+                  ['Mobile-first landing page with clear positioning', ''],
+                  ['Preorder flow with real payment integration', ''],
+                  ['Lead capture and founding member structure', ''],
+                  ['Analytics tracking from day one', ''],
+                  ['TikTok-ready funnel entry point', ''],
                 ].map(([lead, rest]) => (
                   <p key={lead} className="type-body pb-1 text-[#1A1A1A]">
                     <span className="mr-1">&rarr;</span>
@@ -573,11 +601,12 @@ function App() {
                   decoding="async"
                 />
               </a>
+              <p className="type-overline mt-7 tracking-[0.08em] text-[#777777]">Stats:</p>
               <div className="mt-7 grid gap-6 sm:grid-cols-3">
                 {[
                   ['604', 'First page views'],
                   ['1.32%', 'Preorder conversion'],
-                  ['3m 17s', 'Avg. time to convert'],
+                  ['3M 17S', 'Average time on page'],
                 ].map(([value, label]) => (
                   <div key={label}>
                     <p className="type-h3 leading-[1] text-[#1A1A1A]">{value}</p>
@@ -591,37 +620,33 @@ function App() {
 
         <section id={SECTION_IDS[3]} data-ph-section={SECTION_IDS[3]} className="fade-section bg-[#2D2D2D] px-5 py-20 text-[#F5F5F5] md:px-10">
           <div className="w-full">
-            <p className="type-overline tracking-[0.14em] text-[#888888]">Pricing</p>
-            <h2 className="type-h2 mt-4">PICK THE OFFER THAT MATCHES YOUR STAGE.</h2>
+            <p className="type-overline tracking-[0.14em] text-[#888888]">PRICING</p>
+            <h2 className="type-h2 mt-4">Pick the offer that matches your stage.</h2>
             <p className="type-body mt-4 max-w-[760px] text-[#AAAAAA]">
-              Clear scope. Clear price. Launch Sprint is fixed at {LAUNCH_SPRINT_PRICE}. Custom Web Design starts at {CUSTOM_WEB_DESIGN_FROM} and scales with scope.
+              Not sure if your idea is ready enough? It doesn&apos;t need to be. That&apos;s the whole point of a sprint.
             </p>
 
             <div className="mt-8 grid gap-4 lg:grid-cols-2">
               <div className="rounded-[4px] bg-[#353535] p-5">
-                <p className="type-overline text-[#8FAE99]">Best for fast validation</p>
+                <p className="type-overline text-[#8FAE99]">BEST FOR FAST VALIDATION</p>
                 <h3 className="type-h3 mt-2 text-[#F5F5F5]">Launch Sprint</h3>
                 <div className="mt-3 flex items-end gap-3">
-                  <p className="type-h2 text-[#F5F5F5]">{LAUNCH_SPRINT_PRICE}</p>
-                  <p className="type-body pb-1 text-[#888888] line-through">{LAUNCH_SPRINT_ANCHOR_PRICE}</p>
+                  <p className="type-h2 text-[#F5F5F5]">UGX 750K</p>
+                  <p className="type-body pb-1 text-[#888888] line-through">UGX 950K</p>
                 </div>
-                <p className="type-body mt-1 text-[#8FAE99]">Save {LAUNCH_SPRINT_DISCOUNT} this week.</p>
-                <p className="type-body mt-3 text-[#AAAAAA]">Best for founders who need validation fast in 48 hours.</p>
+                <p className="type-body mt-3 text-[#AAAAAA]">Best for founders who need to stop planning and start finding out.</p>
                 <div className="mt-4 space-y-1">
-                  {launchSprintIncludes.map((item) => (
-                    <p key={item} className="type-body text-[#F5F5F5]">
-                      <span className="mr-1">&rarr;</span>{item}
-                    </p>
-                  ))}
+                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>High-converting landing page designed and built</p>
+                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Offer and messaging positioned for validation</p>
+                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Lead capture and waitlist/preorder flow setup</p>
+                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>PostHog or GA baseline analytics integration</p>
+                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Mobile optimisation and launch QA pass</p>
                 </div>
-                <p className="type-overline mt-5 text-[#8FAE99]">Included Bonus Stack</p>
+                <p className="type-overline mt-5 text-[#8FAE99]">INCLUDED FREE:</p>
                 <div className="mt-2 space-y-1">
-                  {bonusStack.map(([label, item, value]) => (
-                    <p key={label} className="type-body text-[#F5F5F5]">
-                      <span className="mr-1">&rarr;</span>
-                      <span className="font-bold">{label}:</span> {item} <span className="text-[#A5A5A5]">({value})</span>
-                    </p>
-                  ))}
+                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Launch Messaging Sprint <span className="text-[#A5A5A5]">(UGX 120K value)</span></p>
+                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Analytics Event Map <span className="text-[#A5A5A5]">(UGX 80K value)</span></p>
+                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>First Week Optimisation Notes <span className="text-[#A5A5A5]">(UGX 50K value)</span></p>
                 </div>
                 <button
                   type="button"
@@ -632,7 +657,7 @@ function App() {
                   }}
                   className="type-caption mt-5 inline-flex items-center gap-3 uppercase tracking-wide text-[#F5F5F5]"
                 >
-                  <span>Book Launch Sprint - {LAUNCH_SPRINT_PRICE}</span>
+                  <span>CLAIM MY SPRINT SLOT - UGX 750K</span>
                   <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#2D5A3D] text-[#F5F5F5]">
                     <CtaArrowIcon />
                   </span>
@@ -640,25 +665,22 @@ function App() {
               </div>
 
               <div className="rounded-[4px] bg-[#313131] p-5">
-                <p className="type-overline text-[#888888]">For Bigger Builds</p>
+                <p className="type-overline text-[#888888]">FOR BIGGER BUILDS</p>
                 <h3 className="type-h3 mt-2 text-[#F5F5F5]">Custom Web Design</h3>
-                <p className="type-h2 mt-3 text-[#F5F5F5]">From {CUSTOM_WEB_DESIGN_FROM}</p>
+                <p className="type-h2 mt-3 text-[#F5F5F5]">FROM UGX 1M+</p>
                 <p className="type-body mt-3 text-[#AAAAAA]">Best for teams that need custom scope, more pages, and deeper design systems.</p>
                 <div className="mt-4 space-y-1">
-                  {customWebIncludes.map((item) => (
-                    <p key={item} className="type-body text-[#F5F5F5]">
-                      <span className="mr-1">&rarr;</span>{item}
-                    </p>
-                  ))}
+                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Custom design direction and page architecture</p>
+                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Multi-page responsive website build</p>
+                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Conversion-focused copy and CTA structure</p>
+                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Technical SEO basics and performance setup</p>
+                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Scalable handoff for future growth</p>
                 </div>
-                <p className="type-overline mt-5 text-[#888888]">Helpful Add-Ons</p>
+                <p className="type-overline mt-5 text-[#888888]">HELPING YOU GROW:</p>
                 <div className="mt-2 space-y-1">
-                  {addOns.map(([item, price]) => (
-                    <p key={item} className="type-body text-[#F5F5F5]">
-                      <span className="mr-1">&rarr;</span>
-                      <span className="font-bold">{item}</span> <span className="text-[#A5A5A5]">({price})</span>
-                    </p>
-                  ))}
+                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Extra landing page variant <span className="text-[#A5A5A5]">(UGX 350K value)</span></p>
+                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Email capture sequence setup <span className="text-[#A5A5A5]">(UGX 80K value)</span></p>
+                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Priority 24-hour revision round <span className="text-[#A5A5A5]">(UGX 150K value)</span></p>
                 </div>
                 <button
                   type="button"
@@ -677,11 +699,20 @@ function App() {
               </div>
             </div>
 
+            <p className="type-body mt-6 max-w-[920px] text-[#AAAAAA]">
+              Payment plans available. 50% upfront, 50% on delivery. Mobile Money and bank transfer accepted.
+            </p>
+            <div className="mt-3 grid gap-1 sm:grid-cols-3">
+              <p className="type-body text-[#F5F5F5]"><span className="mr-1">-</span>No long contracts</p>
+              <p className="type-body text-[#F5F5F5]"><span className="mr-1">-</span>Starts within 24 hours of payment</p>
+              <p className="type-body text-[#F5F5F5]"><span className="mr-1">-</span>Real person, not an agency machine</p>
+            </div>
+
             <div className="mt-10 grid gap-6 md:grid-cols-[1fr_auto] md:items-end">
               <div>
                 <p className="type-h3 text-[#F5F5F5]">DELIVERED IN 48 HOURS OR YOU PAY NOTHING.</p>
                 <p className="type-body mt-3 max-w-[600px] text-[#AAAAAA]">
-                  The guarantee removes risk: if we miss the delivery window for Launch Sprint, you get a full refund.
+                  If we don&apos;t deliver within 48 hours, you pay nothing. Full refund, no questions. We only take on sprints we know we can ship - which is why we cap it at one per week.
                 </p>
               </div>
               <button
@@ -691,14 +722,15 @@ function App() {
                   phCapture('apply_cta_click', { location: 'pricing_section_bottom' })
                   openModal('pricing_section_bottom')
                 }}
-                className="type-caption inline-flex items-center gap-3 uppercase tracking-wide text-[#F5F5F5]"
+                className="type-caption inline-flex items-center gap-3 uppercase tracking-[0.07em] text-[#F5F5F5]"
               >
-                <span>Start Your Project</span>
-                <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#2D5A3D] text-[#F5F5F5]">
+                <span className="font-medium">CLAIM MY SPRINT SLOT</span>
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#2D5A3D] text-[#F5F5F5]">
                   <CtaArrowIcon />
                 </span>
               </button>
             </div>
+            <p className="type-body-sm mt-3 text-[#8FAE99]">Reviewed within 24 hours. Live within 48.</p>
           </div>
         </section>
 
@@ -723,7 +755,7 @@ function App() {
               <div>
                 <h2 className="type-h2">STOP PLANNING.<br/>START LAUNCHING.</h2>
                 <p className="type-body-lg mt-6 max-w-[520px] text-[#444444]">
-                  Every day you don&apos;t launch is a day someone else validates the same idea.
+                  You already know what you want to build. You&apos;ve known for a while. The only thing left is to find out if it works - and the only way to find that out is to put it in front of real people. That&apos;s what this is for.
                 </p>
               </div>
               <div className="text-[#1A1A1A]">
@@ -734,10 +766,10 @@ function App() {
                     phCapture('apply_cta_click', { location: 'final_cta' })
                     openModal('final_cta')
                   }}
-                  className="type-caption inline-flex items-center gap-3 uppercase tracking-wide"
+                  className="type-caption inline-flex items-center gap-3 uppercase tracking-[0.07em] text-[#1A1A1A]"
                 >
-                  <span>Apply For A Launch Sprint</span>
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#2D5A3D] text-[#F5F5F5]">
+                  <span className="font-medium">CLAIM MY SPRINT SLOT</span>
+                  <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#2D5A3D] text-[#F5F5F5]">
                     <CtaArrowIcon />
                   </span>
                 </button>
