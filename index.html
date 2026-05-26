@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Web Align - 48 Hour Launch Sprint</title>
+    <title>Web Align - 48-Hour First Signal Sprint</title>
     <meta
       name="description"
-      content="Web Align builds launch-ready validation funnels in 48 hours: sales page, waitlist or preorder flow, lead capture, and analytics setup."
+      content="Web Align builds first-signal demand tests in 48 hours: clear offer page, commitment CTA, launch assets, and analytics tracking."
     />
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <meta name="theme-color" content="#2D2D2D" />
@@ -19,57 +19,28 @@
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Web Align" />
-    <meta property="og:title" content="Web Align - 48 Hour Launch Sprint" />
+    <meta property="og:title" content="Web Align - 48-Hour First Signal Sprint" />
     <meta
       property="og:description"
-      content="Launch your validation funnel in 48 hours with Web Align: sales page, waitlist or preorder flow, lead capture, and analytics."
+      content="Go from rough idea to live demand test in 48 hours with Web Align: page, CTA, tracking, and launch copy."
     />
     <meta property="og:url" content="https://launch.webalign.studio/" />
     <meta property="og:image" content="https://launch.webalign.studio/og-image.png" />
-    <meta property="og:image:alt" content="Web Align 48 Hour Launch Sprint landing page preview" />
+    <meta property="og:image:alt" content="Web Align 48-Hour First Signal Sprint landing page preview" />
     <meta property="og:image:width" content="1898" />
     <meta property="og:image:height" content="970" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Web Align - 48 Hour Launch Sprint" />
+    <meta name="twitter:title" content="Web Align - 48-Hour First Signal Sprint" />
     <meta
       name="twitter:description"
-      content="From idea to launch-ready funnel in 48 hours - sales page, waitlist or preorder, lead capture, and analytics."
+      content="From rough idea to live demand test in 48 hours - page, CTA, tracking, and first-user launch assets."
     />
     <meta name="twitter:image" content="https://launch.webalign.studio/og-image.png" />
-    <meta name="twitter:image:alt" content="Web Align 48 Hour Launch Sprint landing page preview" />
+    <meta name="twitter:image:alt" content="Web Align 48-Hour First Signal Sprint landing page preview" />
   </head>
   <body>
     <div id="root"></div>
-    <script>
-      (function (t, e) {
-        var o, n, p, r
-        e.__SV = 1
-        window.posthog = e
-        e._i = []
-        e.init = function (i, s, a) {
-          function g(t, e) {
-            var o = e.split('.')
-            o.length == 2 && ((t = t[o[0]]), (e = o[1]))
-            t[e] = function () {
-              t.push([e].concat(Array.prototype.slice.call(arguments, 0)))
-            }
-          }
-          ;((p = t.createElement('script')).type = 'text/javascript')
-          p.crossOrigin = 'anonymous'
-          p.async = true
-          p.src = s.api_host.replace('.i.posthog.com', '-assets.i.posthog.com') + '/static/array.js'
-          ;(r = t.getElementsByTagName('script')[0]).parentNode.insertBefore(p, r)
-          var u = e
-          for (a !== undefined ? (u = e[a] = []) : (a = 'posthog'), u.people = u.people || [], u.toString = function (t) { var e = 'posthog'; return a !== 'posthog' && (e += '.' + a), t || (e += ' (stub)'), e }, u.people.toString = function () { return u.toString(1) + '.people (stub)' }, o = 'init capture register register_once unregister identify alias set_config reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group setPersonProperties setPersonPropertiesForFlags'.split(' '), n = 0; n < o.length; n++) g(u, o[n])
-          e._i.push([i, s, a])
-        }
-        var key = '%VITE_POSTHOG_API_KEY%'
-        if (key && key !== '%VITE_POSTHOG_API_KEY%') {
-          e.init(key, { api_host: 'https://us.i.posthog.com', person_profiles: 'identified_only' })
-        }
-      })(document, window.posthog || [])
-    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -2,6 +2,70 @@ import React, { useEffect, useMemo, useState } from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'
 
+const POSTHOG_API_KEY = (import.meta.env.VITE_POSTHOG_API_KEY || '').trim()
+const POSTHOG_API_HOST = (import.meta.env.VITE_POSTHOG_API_HOST || 'https://us.i.posthog.com').trim()
+
+function initPostHog() {
+  if (typeof window === 'undefined' || window.posthog) return
+  if (!POSTHOG_API_KEY) {
+    console.warn('[PostHog] Missing VITE_POSTHOG_API_KEY. Analytics disabled.')
+    return
+  }
+
+  ;(function (t, e) {
+    let o
+    let n
+    let p
+    let r
+    e.__SV = 1
+    window.posthog = e
+    e._i = []
+    e.init = function (i, s, a) {
+      function g(target, key) {
+        const parts = key.split('.')
+        if (parts.length === 2) {
+          target = target[parts[0]]
+          key = parts[1]
+        }
+        target[key] = function () {
+          target.push([key].concat(Array.prototype.slice.call(arguments, 0)))
+        }
+      }
+      p = t.createElement('script')
+      p.type = 'text/javascript'
+      p.crossOrigin = 'anonymous'
+      p.async = true
+      p.src = s.api_host.replace('.i.posthog.com', '-assets.i.posthog.com') + '/static/array.js'
+      r = t.getElementsByTagName('script')[0]
+      r.parentNode.insertBefore(p, r)
+      let u = e
+      const methods = 'init capture register register_once unregister identify alias set_config reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group setPersonProperties setPersonPropertiesForFlags'.split(' ')
+      if (a !== undefined) {
+        u = e[a] = []
+      } else {
+        a = 'posthog'
+      }
+      u.people = u.people || []
+      u.toString = function (stub) {
+        let name = 'posthog'
+        if (a !== 'posthog') name += '.' + a
+        if (!stub) name += ' (stub)'
+        return name
+      }
+      u.people.toString = function () {
+        return u.toString(1) + '.people (stub)'
+      }
+      for (o = 0, n = methods.length; o < n; o += 1) g(u, methods[o])
+      e._i.push([i, s, a])
+    }
+  })(document, window.posthog || [])
+
+  window.posthog.init(POSTHOG_API_KEY, {
+    api_host: POSTHOG_API_HOST,
+    person_profiles: 'identified_only',
+  })
+}
+
 const INITIAL_LAUNCH_FORM = {
   fullName: '',
   email: '',
@@ -32,10 +96,6 @@ const SECTION_IDS = [
   'offer',
   'final_cta',
 ]
-const LAUNCH_SPRINT_PRICE = 'UGX 250K'
-const CUSTOM_WEB_DESIGN_FROM = 'UGX 1M+'
-const LAUNCH_SPRINT_ANCHOR_PRICE = 'UGX 950K'
-const LAUNCH_SPRINT_DISCOUNT = 'UGX 200K'
 const DOCKET_PAGE_URL = 'https://docketapp.us'
 const WEBALIGN_HOME_URL = 'https://webalign.studio/'
 const WEBALIGN_PORTFOLIO_URL = 'https://webalign.studio/project/'
@@ -48,13 +108,6 @@ const FOOTER_COMPANY_LINKS = [
   ['Blog', WEBALIGN_BLOG_URL],
 ]
 const FOOTER_PORTFOLIO_LINKS = [['Behance', WEBALIGN_BEHANCE_URL]]
-
-function getOpenSprintSlotsFromEnv() {
-  const rawSlots = import.meta.env.VITE_OPEN_SPRINT_SLOTS
-  const parsedSlots = Number.parseInt(String(rawSlots ?? ''), 10)
-  if (!Number.isInteger(parsedSlots) || parsedSlots <= 0) return null
-  return parsedSlots
-}
 
 function CtaArrowIcon({ size = 16, strokeWidth = 1.8 }) {
   return (
@@ -77,11 +130,7 @@ function phCapture(eventName, properties = {}) {
 }
 
 function App() {
-  const openSprintSlots = getOpenSprintSlotsFromEnv()
-  const hasConfiguredOpenSprintSlots = openSprintSlots !== null
-  const openSprintAvailabilityText = hasConfiguredOpenSprintSlots
-    ? `sprint slot${openSprintSlots === 1 ? '' : 's'} open this week`
-    : 'Limited sprint capacity this week'
+  const openSprintAvailabilityText = '5 founder slots at UGX 450K'
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalType, setModalType] = useState('launch_sprint')
@@ -94,19 +143,10 @@ function App() {
   const isCustomWebForm = modalType === 'custom_web'
 
   useEffect(() => {
-    const revealObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible')
-          }
-        })
-      },
-      { threshold: 0.12 }
-    )
+    phCapture('pageview', { page: window.location.pathname })
+  }, [])
 
-    document.querySelectorAll('.fade-section').forEach((el) => revealObserver.observe(el))
-
+  useEffect(() => {
     const firedScrollSections = new Set()
     const scrollObserver = new IntersectionObserver(
       (entries) => {
@@ -125,7 +165,6 @@ function App() {
     document.querySelectorAll('[data-ph-section]').forEach((el) => scrollObserver.observe(el))
 
     return () => {
-      revealObserver.disconnect()
       scrollObserver.disconnect()
     }
   }, [])
@@ -262,52 +301,19 @@ function App() {
   }
 
   const heroCarouselItems = [
-    { name: 'WebAlign', category: 'Studio', ratio: '3 / 2', height: 220, src: '/images/carousel/mix-webalign.webp', position: 'center 24%', fit: 'cover' },
-    { name: 'Docket', category: 'Hero', ratio: '3 / 2', height: 232, src: '/images/carousel/docket-01.webp', position: 'center 20%', fit: 'cover' },
-    { name: 'FapCount', category: 'Feature', ratio: '16 / 9', height: 242, src: '/images/carousel/Screenshot 2026-05-15 171205.png', position: 'center top', fit: 'cover', zoom: 1.04 },
-    { name: 'Docket', category: 'Pricing', ratio: '1 / 1', height: 300, src: '/images/carousel/Screenshot 2026-05-15 170440.png', position: 'center center', fit: 'cover' },
-    { name: 'Cherry', category: 'Hero', ratio: '3 / 2', height: 240, src: '/images/carousel/mix-cherry.webp', position: 'center 24%', fit: 'cover' },
+    { name: 'Web Align', category: 'Studio site', ratio: '3 / 2', height: 220, src: '/images/carousel/mix-webalign.webp', position: 'center 24%', fit: 'cover' },
+    { name: 'Docket', category: '48-hour launch test', ratio: '3 / 2', height: 232, src: '/images/carousel/docket-01.webp', position: 'center 20%', fit: 'cover' },
+    { name: 'Fapcount', category: 'Product page', ratio: '16 / 9', height: 242, src: '/images/carousel/Screenshot 2026-05-15 171205.png', position: 'center top', fit: 'cover', zoom: 1.04 },
+    { name: 'Docket', category: 'Preorder flow', ratio: '1 / 1', height: 300, src: '/images/carousel/Screenshot 2026-05-15 170440.png', position: 'center center', fit: 'cover' },
+    { name: 'Cherry', category: 'Waitlist hero', ratio: '3 / 2', height: 240, src: '/images/carousel/mix-cherry.webp', position: 'center 24%', fit: 'cover' },
   ]
   const heroCarouselLoop = [...heroCarouselItems, ...heroCarouselItems]
-  const checklist = [
-    ['High-converting sales page', 'Copywritten and designed for conversion.'],
-    ['Mobile-first, fast-loading build', 'Built to perform cleanly on every device.'],
-    ['Offer positioning and messaging', 'Clarify what you sell and why it matters.'],
-    ['Waitlist or preorder system', 'Capture demand before full product build.'],
-    ['Lead capture setup', 'Structured to collect and qualify interest.'],
-    ['CTA optimization', 'Clear next actions that drive response.'],
-    ['Analytics integration', 'Ready for PostHog or GA tracking.'],
-    ['Launch-ready in 48 hours', 'Delivered on a hard timeline.'],
-  ]
-  const launchSprintIncludes = [
-    'High-converting landing page designed and built',
-    'Offer and messaging positioned for validation',
-    'Lead capture and waitlist/preorder flow setup',
-    'PostHog or GA baseline analytics integration',
-    'Mobile optimization and launch QA pass',
-  ]
-  const customWebIncludes = [
-    'Custom design direction and page architecture',
-    'Multi-page responsive website build',
-    'Conversion-focused copy and CTA structure',
-    'Technical SEO basics and performance setup',
-    'Scalable handoff for future growth',
-  ]
-  const bonusStack = [
-    ['Bonus 1', 'Launch Messaging Sprint', 'UGX 120K value'],
-    ['Bonus 2', 'Analytics Event Map', 'UGX 80K value'],
-    ['Bonus 3', 'First Week Optimization Notes', 'UGX 50K value'],
-  ]
-  const addOns = [
-    ['Extra landing page variant', 'UGX 250K'],
-    ['Email capture sequence setup', 'UGX 180K'],
-    ['Priority 24-hour revision round', 'UGX 150K'],
-  ]
-  const testimonials = [
-    ['Founder, Docket', 'Web Align moved us from idea to a live funnel in two days. We stopped guessing and started getting real signal.'],
-    ['SaaS Operator', 'The messaging and offer clarity changed everything. We launched faster and the page converted better than our first draft.'],
-    ['Ecommerce Team', 'Fast turnaround, clean execution, and zero fluff. The launch sprint gave us momentum we could build on immediately.'],
-  ]
+  const testimonial = {
+    testimonial_quote:
+      'Creative, fast, and easy to work with. Their minimal design approach makes every project stand out, and they genuinely listen while giving great recommendations.',
+    testimonial_name: 'Jesse Miti',
+    testimonial_role: 'Serenity',
+  }
 
   return (
     <>
@@ -327,7 +333,7 @@ function App() {
           <div className="px-[clamp(20px,5vw,48px)] py-[18px] md:px-12">
             <div className="flex items-center justify-between gap-6">
               <div className="flex items-center gap-3">
-                <span className="type-overline font-normal text-[#888888]">LAUNCH SPRINT</span>
+                <span className="type-overline hidden font-normal text-[#888888] sm:inline">LAUNCH SPRINT</span>
               </div>
 
               <div className="flex items-center gap-6">
@@ -337,13 +343,7 @@ function App() {
                     style={{ animation: 'heroPulse 2s infinite' }}
                   />
                   <span className="type-caption font-normal text-[#1A1A1A]">
-                    {hasConfiguredOpenSprintSlots ? (
-                      <>
-                        <span className="slot-count">{openSprintSlots}</span> {openSprintAvailabilityText}
-                      </>
-                    ) : (
-                      openSprintAvailabilityText
-                    )}
+                    {openSprintAvailabilityText}
                   </span>
                 </div>
 
@@ -369,13 +369,14 @@ function App() {
               className="type-hero mt-[clamp(28px,4.5vh,56px)] w-full max-w-full text-[#1A1A1A] md:max-w-[80%] lg:max-w-[58%]"
               style={{ marginBottom: 'clamp(10px, 1.75vh, 18px)' }}
             >
-              GO FROM IDEA TO FIRST SIGNUP IN 48 HOURS.
+              GO FROM ROUGH IDEA TO LIVE DEMAND TEST IN 48 HOURS.
             </h1>
 
             <div className="mt-[clamp(12px,2.5vh,28px)] flex w-full max-w-[820px] flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
               <p className="type-body-sm max-w-[420px] font-light text-[#555555]">
-                You bring the idea. We handle the page, the funnel, the copy, the setup. 48 hours later you&apos;re
-                live and finding out if people actually want this.
+                You bring the messy idea. We sharpen the promise, build the page, set up the CTA, connect basic
+                tracking, and give you the launch messages to put it in front of real people. 48 hours later,
+                you&apos;re not guessing anymore. You have something live and a way to read the signal.
               </p>
 
               <div className="lg:self-end">
@@ -397,8 +398,8 @@ function App() {
                     </svg>
                   </span>
                 </button>
-                <p className="type-overline mt-2 max-w-[320px] font-light normal-case leading-[1.35] tracking-[0.01em] text-[#7A7A7A] lg:text-right">
-                  48 hours. Or you pay nothing.
+                <p className="type-overline mt-2 max-w-[320px] font-light normal-case leading-[1.35] tracking-[0.01em] text-[#7A7A7A]">
+                  48 hours after completed intake. No live test, no final payment.
                 </p>
               </div>
             </div>
@@ -461,10 +462,10 @@ function App() {
               <p className="type-overline tracking-[0.14em] text-[#888888]">The Problem</p>
               <h2 className="type-h2 mt-4">You&apos;re not stuck because your idea is bad.</h2>
               <p className="type-body-lg mt-7 max-w-[560px] text-[#444444]">
-                It&apos;s not that you&apos;re not working. It&apos;s that the work you&apos;re doing can&apos;t answer the only
-                question that matters - do people actually want this. There&apos;s a version of this where you spend
-                six more months refining something nobody has seen. And a version where you find out in 48 hours. Both
-                start today.
+                It&apos;s not that you&apos;re lazy. It&apos;s not that the idea is bad. It&apos;s that the work you&apos;re doing
+                still cannot answer the only question that matters: do real people care enough to act? There&apos;s a
+                version of this where you spend six more months refining something nobody has seen, and there&apos;s a
+                version where you put a clear test in front of people in 48 hours. Both start today.
               </p>
 
               <button
@@ -482,20 +483,6 @@ function App() {
                 </span>
               </button>
 
-              <div className="mt-8 space-y-1">
-                {[
-                  "You've been working on this for months. Nothing is live.",
-                  "You know the market. You've done the research. You haven't shipped.",
-                  'The logo has had three versions. The landing page has had zero.',
-                  "You tell yourself you'll launch when it's ready. It's never ready.",
-                  "You've explained the idea to ten people. None of them can sign up for it.",
-                ].map((item) => (
-                  <p key={item} className="type-body pb-1 text-[#303030]">
-                    <span className="mr-1">&rarr;</span>
-                    <span>{item}</span>
-                  </p>
-                ))}
-              </div>
             </div>
 
             <div className="w-full">
@@ -520,32 +507,82 @@ function App() {
           </div>
         </section>
 
+        <section data-ph-section="reframe" className="fade-section bg-[#EFEFEF] px-5 py-20 md:px-10">
+          <div className="grid w-full gap-10 lg:grid-cols-2 lg:items-start">
+            <div>
+              <p className="type-overline tracking-[0.14em] text-[#888888]">THE REFRAME</p>
+              <h2 className="type-h2 mt-4 max-w-[760px]">THIS IS NOT A WEBSITE SPRINT. IT&apos;S A DEMAND TEST.</h2>
+              <p className="type-body-lg mt-6 max-w-[760px] text-[#444444]">
+                A normal landing page tells people your idea exists. A demand test helps you find out if anyone cares.
+                That means the message, page, CTA, tracking, and first-user launch plan all work together. The goal is
+                not to look polished. The goal is to get real behaviour from real people.
+              </p>
+              <p className="type-body-lg mt-8 max-w-[740px] text-[#444444]">
+                You do not need a perfect product to learn. You need a test people can react to.
+              </p>
+            </div>
+
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-1">
+              <div className="rounded-[4px] border border-[#D7D7D1] bg-[#E8E8E3] px-5 py-6">
+                <p className="type-overline flex items-center gap-2 tracking-[0.08em] text-[#888888]">
+                  <span
+                    className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-[#B94B4B] bg-[#F3DADA] text-[#8F2A2A]"
+                    aria-hidden="true"
+                  >
+                    x
+                  </span>
+                  Not this
+                </p>
+                <p className="type-body mt-3 text-[#303030]">
+                  A pretty &apos;coming soon&apos; page with a vague waitlist and no plan for getting it in front of users.
+                </p>
+              </div>
+              <div className="rounded-[4px] border border-[#D7D7D1] bg-[#E8E8E3] px-5 py-6">
+                <p className="type-overline flex items-center gap-2 tracking-[0.08em] text-[#888888]">
+                  <span
+                    className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-[#2D5A3D] bg-[#DCECDD] text-[#1F4A2E]"
+                    aria-hidden="true"
+                  >
+                    ✓
+                  </span>
+                  This
+                </p>
+                <p className="type-body mt-3 text-[#303030]">
+                  A focused launch system with a clear promise, working CTA, tracking, and messages you can send to
+                  your first users.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section id={SECTION_IDS[1]} data-ph-section={SECTION_IDS[1]} className="fade-section bg-[#2D2D2D] px-5 py-20 text-[#F5F5F5] md:px-10">
           <div className="w-full">
             <p className="type-overline tracking-[0.14em] text-[#888888]">The Process</p>
-            <h2 className="type-h2 mt-4">Three steps. 48 hours. Done.</h2>
-            <p className="type-body mt-4 max-w-[480px] text-[var(--text-muted)]">
-              We&apos;ve done this before. Docket went from a paragraph and a gut feeling to a live page with 604 visitors and real preorder interest. In 48 hours.
+            <h2 className="type-h2 mt-4 max-w-[760px]">Three steps. 48 hours. Done.</h2>
+            <p className="type-body mt-4 max-w-[680px] text-[var(--text-muted)]">
+              We&apos;ve done this before. Docket went from a rough idea and a gut feeling to a live demand test with 604
+              visitors, preorder intent, and real behaviour to learn from in 48 hours.
             </p>
             <div className="mt-10 grid gap-5 md:grid-cols-3">
               {[
                 [
                   '01',
-                  'Send us your idea',
-                  "Rough notes, a voice memo, a napkin sketch - it doesn't matter. Fill out a short application and tell us what you're building and who it's for. We've launched ideas that were a paragraph and a gut feeling. That's enough.",
+                  'Send us the messy version',
+                  "Rough notes, a voice memo, screenshots, competitor links, a paragraph, a gut feeling - that's enough. You fill out a short intake telling us what you're building, who it's for, and what action would prove interest.",
                   'Day 0',
                 ],
                 [
                   '02',
-                  'We build the launch system',
-                  "We build the whole thing. Sales page, lead capture, waitlist or preorder flow, analytics. Written, designed, and live. You don't touch a single line of code.",
-                  'Hour 1-48',
+                  'We build the demand test',
+                  "We sharpen the promise, write the page, build the funnel, set up the CTA, connect basic analytics, and prepare the first-user launch assets. You don't touch a single line of code.",
+                  'Hours 1-48',
                 ],
                 [
                   '03',
-                  'You launch. You find out.',
-                  'You share it. You watch what happens. You find out in days what would have taken months to guess.',
-                  'Hour 48',
+                  'You launch. You read the signal.',
+                  'You share the page using the launch kit. Then you watch what people do: visits, clicks, replies, signups, bookings, preorder intent, objections. You find out in days what months of private planning could not tell you.',
+                  'Hour 48+',
                 ],
               ].map(([n, t, d, tag]) => (
                 <div key={n} className="rounded-[4px] bg-[#383838] px-5 py-6">
@@ -559,18 +596,93 @@ function App() {
           </div>
         </section>
 
+        <section data-ph-section="what_we_build" className="fade-section bg-[#EFEFEF] px-5 py-20 md:px-10">
+          <div className="w-full">
+            <p className="type-overline tracking-[0.14em] text-[#888888]">WHAT WE BUILD</p>
+            <h2 className="type-h2 mt-4 max-w-[760px]">EVERYTHING YOU NEED TO RUN THE FIRST TEST.</h2>
+            <p className="type-body mt-4 max-w-[760px] text-[#444444]">
+              Not a full MVP. Not a brand identity. Not a 20-page website. Just the minimum launch system that lets
+              real people react.
+            </p>
+            <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {[
+                [
+                  'Idea Compression Brief',
+                  "Your idea starts messy. That's normal. We turn your notes, voice memo, screenshots, or rough explanation into a clear launch brief: who it's for, what pain it solves, why people should care now, and what this test is trying to prove.",
+                ],
+                [
+                  'Proof-First Landing Page',
+                  'We build a page around one question: will a stranger take the next step? The page includes a clear hero, problem section, solution explanation, CTA, FAQ, and trust-building copy.',
+                ],
+                [
+                  'Commitment-Based CTA',
+                  'We help choose the right action for the idea. That could be a waitlist, early-access request, call booking, preorder click, paid beta interest, or demo request.',
+                ],
+                [
+                  'Analytics Event Map',
+                  'You should not launch and guess what happened. We set up simple tracking for page views, CTA clicks, form submissions, booking intent, preorder intent, and other key actions.',
+                ],
+                [
+                  'First-User Launch Kit',
+                  'A page with no audience is not a test. You get launch posts, DM scripts, a feedback ask, and suggested places to share the idea.',
+                ],
+                [
+                  'Signal Scorecard',
+                  'After launch, the numbers need interpretation. We give you a simple scorecard to decide whether the signal means build, tweak, narrow, or kill the idea.',
+                ],
+              ].map(([title, body]) => (
+                <div key={title} className="rounded-[4px] border border-[#D7D7D1] bg-[#E8E8E3] px-5 py-6">
+                  <p className="type-body-lg font-bold text-[#1A1A1A]">{title}</p>
+                  <p className="type-body mt-3 text-[#444444]">{body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section data-ph-section="signal_ladder" className="fade-section bg-[#EFEFEF] px-5 py-20 md:px-10">
+          <div className="w-full">
+            <p className="type-overline tracking-[0.14em] text-[#888888]">WHAT COUNTS AS SIGNAL?</p>
+            <h2 className="type-h2 mt-4 max-w-[760px]">SIGNUPS ARE NICE. SIGNAL IS BETTER.</h2>
+            <p className="type-body-lg mt-6 max-w-[760px] text-[#444444]">
+              A random email signup does not always mean demand. Someone may sign up and forget. Someone may click
+              because they&apos;re curious. Someone may say &quot;cool idea&quot; and never pay. So we look for stronger behaviour.
+            </p>
+            <div className="mt-10 grid gap-5 md:grid-cols-3">
+              {[
+                ['Weak signal', ['Page views', 'Likes', '"This is cool"', 'Random email signups']],
+                ['Better signal', ['CTA clicks', 'Qualified form responses', 'Replies to outreach', 'Specific pain notes', 'People asking how it works']],
+                ['Strong signal', ['Booked calls', 'Preorder clicks', 'Paid beta interest', 'People asking when it launches', 'People comparing it to something they already use']],
+              ].map(([title, items]) => (
+                <div key={title} className="rounded-[4px] border border-[#D7D7D1] bg-[#E8E8E3] px-5 py-6">
+                  <p className="type-body-lg font-bold text-[#1A1A1A]">{title}</p>
+                  <div className="mt-3 space-y-1">
+                    {items.map((item) => (
+                      <p key={item} className="type-body text-[#303030]">
+                        <span className="mr-1">&rarr;</span>
+                        {item}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="type-body-lg mt-8 max-w-[760px] text-[#444444]">
+              The goal is not to collect false hope. The goal is to know what happened and what to do next.
+            </p>
+          </div>
+        </section>
+
         <section id={SECTION_IDS[2]} data-ph-section={SECTION_IDS[2]} className="fade-section bg-[#EFEFEF] px-5 py-20 md:px-10">
           <div className="grid w-full gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
             <div>
               <p className="type-overline tracking-[0.14em] text-[#888888]">Proof Of Execution</p>
-              <h2 className="type-h2 mt-4">Docket. 48 hours. Here&apos;s what happened.</h2>
+              <h2 className="type-h2 mt-4 max-w-[760px]">Docket. 48 hours. Here&apos;s what happened.</h2>
               <p className="type-body mt-3 text-[#888888]">
-                Docket started as a simple observation, people lose money every day on things they&apos;ve already
-                bought. Return windows expire. Warranties go unfiled. Deductibles get forgotten. The question was
-                whether anyone would pay for a solution before it existed.
-              </p>
-              <p className="type-body-lg mt-6 max-w-[520px] text-[#444444]">
-                We built the entire launch system in 48 hours to find out.
+                Docket started as a simple observation: people lose money on things they&apos;ve already bought. Return
+                windows expire. Warranties go unclaimed. Deductibles get forgotten. The question was not
+                &quot;can we build this?&quot; The question was &quot;will anyone show interest before the product exists?&quot;
+                So we built the demand test.
               </p>
               <div className="mt-6 grid gap-1 sm:grid-cols-1">
                 {[
@@ -619,38 +731,70 @@ function App() {
               </div>
             </div>
           </div>
+          <p className="type-body-lg mt-8 max-w-[780px] text-[#444444]">
+            That did not prove Docket would become a huge company. It did something more useful at the start: it gave
+            us real behaviour to learn from.
+          </p>
         </section>
 
         <section id={SECTION_IDS[3]} data-ph-section={SECTION_IDS[3]} className="fade-section bg-[#2D2D2D] px-5 py-20 text-[#F5F5F5] md:px-10">
           <div className="w-full">
             <p className="type-overline tracking-[0.14em] text-[#888888]">PRICING</p>
-            <h2 className="type-h2 mt-4">Pick the offer that matches your stage.</h2>
+            <h2 className="type-h2 mt-4 max-w-[760px]">PICK THE FASTEST PATH TO SIGNAL.</h2>
             <p className="type-body mt-4 max-w-[760px] text-[#AAAAAA]">
-              Not sure if your idea is ready enough? It doesn&apos;t need to be. That&apos;s the whole point of a sprint.
+              Not sure if your idea is ready enough? It doesn&apos;t need to be. That&apos;s the whole point of the sprint.
             </p>
 
             <div className="mt-8 grid gap-4 lg:grid-cols-2">
               <div className="rounded-[4px] bg-[#353535] p-5">
-                <p className="type-overline text-[#8FAE99]">BEST FOR FAST VALIDATION</p>
-                <h3 className="type-h3 mt-2 text-[#F5F5F5]">Launch Sprint</h3>
-                <div className="mt-3 flex items-end gap-3">
-                  <p className="type-h2 text-[#F5F5F5]">UGX 250K</p>
-                  <p className="pb-1" style={{ fontFamily: 'Poppins', fontSize: '12px', color: 'var(--green)' }}>Increases to UGX 500K after this week.</p>
+                <p className="type-overline text-[#8FAE99]">PRIMARY OFFER</p>
+                <h3 className="type-h3 mt-2 text-[#F5F5F5]">48-HOUR FIRST SIGNAL SPRINT</h3>
+                <div className="mt-3 flex flex-col items-start gap-1">
+                  <p className="type-h2 text-[#F5F5F5]">UGX 450K</p>
+                  <p className="type-body-sm text-[#8FAE99]">
+                    Founding batch price. Moves to UGX 750K+ after the first 5 founder slots.
+                  </p>
                 </div>
-                <p className="type-body mt-3 text-[#AAAAAA]">Best for founders who need to stop planning and start finding out. Same full sprint, same deliverables — this is what it costs before everyone knows about it.</p>
+                <p className="type-body mt-4 text-[#AAAAAA]">
+                  Best for founders who need to stop planning and start finding out. You bring the idea. We turn it
+                  into a live demand test with a clear page, working CTA, tracking, launch copy, and a scorecard for
+                  what to do next.
+                </p>
                 <div className="mt-4 space-y-1">
-                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>A landing page built to get signups</p>
-                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Simple, clear messaging for your offer</p>
-                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>A waitlist or preorder flow set up for you</p>
-                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Basic analytics so you can track results</p>
-                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Mobile checks and launch QA before going live</p>
+                  {[
+                    'Idea Compression Brief',
+                    'Proof-first landing page',
+                    'Waitlist, preorder, or call-booking CTA',
+                    'Lead capture setup',
+                    'Basic analytics + event map',
+                    'First-user launch kit',
+                    'Signal Scorecard',
+                    'Mobile QA + handoff Loom',
+                  ].map((item) => (
+                    <p key={item} className="type-body text-[#F5F5F5]">
+                      <span className="mr-1">&rarr;</span>
+                      {item}
+                    </p>
+                  ))}
                 </div>
                 <p className="type-overline mt-5 text-[#8FAE99]">INCLUDED FREE:</p>
                 <div className="mt-2 space-y-1">
-                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Launch Messaging Sprint <span className="text-[#A5A5A5]">(UGX 120K value)</span></p>
-                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Analytics Event Map <span className="text-[#A5A5A5]">(UGX 80K value)</span></p>
-                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>First Week Optimisation Notes <span className="text-[#A5A5A5]">(UGX 50K value)</span></p>
+                  {[
+                    'Kill-or-Continue Scorecard',
+                    'First-Week Signal Tracker',
+                    'Objection FAQ Pack',
+                    '72-Hour Signal Review',
+                    'One Free Angle Revision',
+                  ].map((item) => (
+                    <p key={item} className="type-body text-[#F5F5F5]">
+                      <span className="mr-1">&rarr;</span>
+                      {item}
+                    </p>
+                  ))}
                 </div>
+                <p className="type-body-sm mt-5 text-[#8FAE99]">
+                  50% upfront. 50% on delivery. Mobile Money and bank transfer accepted.
+                </p>
                 <button
                   type="button"
                   data-ph-event="apply_cta_click"
@@ -660,7 +804,7 @@ function App() {
                   }}
                   className="type-caption mt-5 inline-flex items-center gap-3 uppercase tracking-wide text-[#F5F5F5]"
                 >
-                  <span>CLAIM MY SPRINT SLOT — UGX 250K</span>
+                  <span>CLAIM MY SPRINT SLOT - UGX 450K</span>
                   <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#2D5A3D] text-[#F5F5F5]">
                     <CtaArrowIcon />
                   </span>
@@ -668,22 +812,26 @@ function App() {
               </div>
 
               <div className="rounded-[4px] bg-[#313131] p-5">
-                <p className="type-overline text-[#888888]">FOR BIGGER BUILDS</p>
-                <h3 className="type-h3 mt-2 text-[#F5F5F5]">Custom Web Design</h3>
+                <p className="type-overline text-[#888888]">SECONDARY OFFER</p>
+                <h3 className="type-h3 mt-2 text-[#F5F5F5]">CUSTOM WEB DESIGN</h3>
                 <p className="type-h2 mt-3 text-[#F5F5F5]">FROM UGX 1M+</p>
-                <p className="type-body mt-3 text-[#AAAAAA]">Best for teams that need more than a sprint. If you need a bigger site, more pages, and a stronger brand system, we plan and build it with you from start to launch.</p>
+                <p className="type-body mt-3 text-[#AAAAAA]">
+                  For teams that already know what they&apos;re building and need a more complete site, stronger brand
+                  presence, or multi-page web experience.
+                </p>
                 <div className="mt-4 space-y-1">
-                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>A custom look and structure for your site</p>
-                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>A full multi-page website that works on all screens</p>
-                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Clear copy and calls to action on each page</p>
-                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Basic SEO and speed setup</p>
-                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>A handoff your team can easily keep building on</p>
-                </div>
-                <p className="type-overline mt-5 text-[#888888]">HELPING YOU GROW:</p>
-                <div className="mt-2 space-y-1">
-                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Extra landing page variant <span className="text-[#A5A5A5]">(UGX 350K value)</span></p>
-                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Email capture sequence setup <span className="text-[#A5A5A5]">(UGX 80K value)</span></p>
-                  <p className="type-body text-[#F5F5F5]"><span className="mr-1">&rarr;</span>Priority 24-hour revision round <span className="text-[#A5A5A5]">(UGX 150K value)</span></p>
+                  {[
+                    'Custom site structure',
+                    'Multi-page design and development',
+                    'Clear copy and CTAs',
+                    'Basic SEO and speed setup',
+                    'Handoff your team can build on',
+                  ].map((item) => (
+                    <p key={item} className="type-body text-[#F5F5F5]">
+                      <span className="mr-1">&rarr;</span>
+                      {item}
+                    </p>
+                  ))}
                 </div>
                 <button
                   type="button"
@@ -694,36 +842,123 @@ function App() {
                   }}
                   className="type-caption mt-5 inline-flex items-center gap-3 uppercase tracking-wide text-[#F5F5F5]"
                 >
-                  <span>Request Custom Web Quote</span>
+                  <span>REQUEST CUSTOM WEB QUOTE</span>
                   <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#2D5A3D] text-[#F5F5F5]">
                     <CtaArrowIcon />
                   </span>
                 </button>
               </div>
             </div>
+          </div>
+        </section>
 
-            <p className="type-body mt-6 max-w-[920px] text-[#AAAAAA]">
-              Payment plans available. 50% upfront, 50% on delivery. Mobile Money and bank transfer accepted.
+        <section data-ph-section="bonuses" className="fade-section bg-[#2D2D2D] px-5 pb-20 text-[#F5F5F5] md:px-10">
+          <div className="w-full">
+            <p className="type-overline tracking-[0.14em] text-[#888888]">INCLUDED BONUSES</p>
+            <h2 className="type-h2 mt-4 max-w-[760px]">THE EXTRAS THAT STOP YOU FROM LAUNCHING BLIND.</h2>
+            <p className="type-body mt-4 max-w-[760px] text-[#AAAAAA]">
+              These are included in the founding sprint to help you understand what happens after the page goes live.
             </p>
-            <div className="mt-3 grid gap-1 sm:grid-cols-3">
-              <p className="type-body text-[#F5F5F5]"><span className="mr-1">-</span>No long contracts</p>
-              <p className="type-body text-[#F5F5F5]"><span className="mr-1">-</span>Starts within 24 hours of payment</p>
-              <p className="type-body text-[#F5F5F5]"><span className="mr-1">-</span>Real person, not an agency machine</p>
+            <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {[
+                ['Kill-or-Continue Scorecard', 'UGX 150K value', 'Know what your first signal actually means. This scorecard helps you decide whether to build, tweak, narrow, or kill the idea after launch.'],
+                ['First-Week Signal Tracker', 'UGX 80K value', 'A simple tracker for your first week after launch: posts sent, DMs sent, replies, clicks, signups, calls booked, objections, and notes from real users.'],
+                ['Objection FAQ Pack', 'UGX 100K value', 'We write answers to the questions people are likely to ask before they take action: who it&apos;s for, how much it costs, why they should trust it, and what happens after they sign up.'],
+                ['Founder Launch Copy Pack', 'UGX 120K value', "You get launch posts, DM scripts, a feedback request, a founder story post, and a 'looking for first users' post."],
+                ['72-Hour Signal Review', 'UGX 150K value', "After your first few days of sharing the page, send us your early numbers and responses. We'll help you understand what the signal probably means and what to change next."],
+                ['One Free Angle Revision', 'UGX 200K value', "If you complete the agreed launch actions and get zero usable signal, we'll rewrite your main angle and CTA once for free. Sometimes the idea is not the problem. Sometimes the first angle is."],
+              ].map(([title, value, body]) => (
+                <div key={title} className="rounded-[4px] bg-[#383838] px-5 py-6">
+                  <p className="type-body-lg font-bold text-[#F5F5F5]">{title}</p>
+                  <p className="type-overline mt-2 tracking-[0.08em] text-[#8FAE99]">{value}</p>
+                  <p className="type-body mt-3 text-[#AAAAAA]">{body}</p>
+                </div>
+              ))}
             </div>
+          </div>
+        </section>
 
-            <div className="mt-10 grid gap-6 md:grid-cols-[1fr_auto] md:items-end">
+        <section data-ph-section="value_stack" className="fade-section bg-[#2D2D2D] px-5 pb-20 text-[#F5F5F5] md:px-10">
+          <div className="w-full rounded-[4px] bg-[#353535] p-6 md:p-8">
+            <p className="type-overline tracking-[0.14em] text-[#8FAE99]">VALUE STACK</p>
+            <h2 className="type-h2 mt-4 max-w-[760px]">UGX 2M+ OF LAUNCH WORK FOR UGX 450K.</h2>
+            <p className="type-body mt-4 max-w-[820px] text-[#AAAAAA]">
+              The founding sprint price is low because we&apos;re opening a small batch, collecting more proof, and
+              sharpening the process. This will not stay at 450K forever.
+            </p>
+            <div className="mt-8 grid gap-1 sm:grid-cols-2">
+              {[
+                'Idea Compression Brief - UGX 150K value',
+                'Proof-First Landing Page - UGX 500K value',
+                'Commitment CTA Setup - UGX 150K value',
+                'Lead Capture / Preorder / Booking Flow - UGX 200K value',
+                'Analytics Event Map - UGX 100K value',
+                'First-User Launch Kit - UGX 200K value',
+                'Signal Scorecard - UGX 150K value',
+                'Mobile QA + Launch Handoff - UGX 100K value',
+                'Loom Walkthrough - UGX 80K value',
+                'Kill-or-Continue Scorecard - UGX 150K value',
+                'First-Week Signal Tracker - UGX 80K value',
+                'Objection FAQ Pack - UGX 100K value',
+                'Founder Launch Copy Pack - UGX 120K value',
+                '72-Hour Signal Review - UGX 150K value',
+                'One Free Angle Revision - UGX 200K value',
+              ].map((item) => (
+                <p key={item} className="type-body text-[#F5F5F5]">
+                  <span className="mr-1">&rarr;</span>
+                  {item}
+                </p>
+              ))}
+            </div>
+            <p className="type-body-lg mt-8 text-[#F5F5F5]">Founding batch price: UGX 450K</p>
+            <p className="type-body mt-2 text-[#8FAE99]">50% upfront. 50% on delivery.</p>
+            <button
+              type="button"
+              data-ph-event="apply_cta_click"
+              onClick={() => {
+                phCapture('apply_cta_click', { location: 'value_stack' })
+                openModal('value_stack')
+              }}
+              className="type-caption mt-6 inline-flex items-center gap-3 uppercase tracking-wide text-[#F5F5F5]"
+            >
+              <span>APPLY FOR A SPRINT SLOT</span>
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#2D5A3D] text-[#F5F5F5]">
+                <CtaArrowIcon />
+              </span>
+            </button>
+          </div>
+        </section>
+
+        <section data-ph-section="guarantee" className="fade-section bg-[#2D2D2D] px-5 pb-20 text-[#F5F5F5] md:px-10">
+          <div className="w-full">
+            <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-end">
               <div>
-                <p className="type-h3 text-[#F5F5F5]">DELIVERED IN 48 HOURS OR YOU PAY NOTHING.</p>
-                <p className="type-body mt-3 max-w-[600px] text-[#AAAAAA]">
-                  If we don&apos;t deliver within 48 hours, you pay nothing. Full refund, no questions. We only take on sprints we know we can ship - which is why we cap it at one per week. And if nobody signs up after you launch — that&apos;s not failure. That&apos;s the cheapest possible way to find out what needs to change. Either way, you&apos;re further along than you were.
+                <p className="type-h3 text-[#F5F5F5]">NO LIVE TEST, NO FINAL PAYMENT.</p>
+                <p className="type-body mt-3 max-w-[740px] text-[#AAAAAA]">
+                  Once your intake is complete and your sprint starts, we have 48 hours to deliver your live demand
+                  test:
+                </p>
+                <div className="mt-4 space-y-1">
+                  {['Page', 'CTA', 'Lead capture', 'Tracking', 'Launch assets', 'Handoff'].map((item) => (
+                    <p key={item} className="type-body text-[#F5F5F5]">
+                      <span className="mr-1">-</span>
+                      {item}
+                    </p>
+                  ))}
+                </div>
+                <p className="type-body mt-4 max-w-[740px] text-[#AAAAAA]">
+                  If we miss that window, you do not pay the final 50%. And if you complete the agreed first-user
+                  launch actions and get zero usable signal, we&apos;ll rewrite your main angle and CTA once for free.
+                  No fake &quot;guaranteed customers.&quot; No pretending every idea is validated. Just a fast, honest test
+                  that gets you closer to the truth.
                 </p>
               </div>
               <button
                 type="button"
                 data-ph-event="apply_cta_click"
                 onClick={() => {
-                  phCapture('apply_cta_click', { location: 'pricing_section_bottom' })
-                  openModal('pricing_section_bottom')
+                  phCapture('apply_cta_click', { location: 'guarantee_cta' })
+                  openModal('guarantee_cta')
                 }}
                 className="type-caption inline-flex items-center gap-3 uppercase tracking-[0.07em] text-[#F5F5F5]"
               >
@@ -733,29 +968,84 @@ function App() {
                 </span>
               </button>
             </div>
-            <p className="type-body-sm mt-3 text-[#8FAE99]">Reviewed within 24 hours. Live within 48.</p>
+            <p className="type-body-sm mt-3 text-[#8FAE99]">
+              Reviewed within 24 hours. Live within 48 after completed intake.
+            </p>
           </div>
         </section>
 
+        <section data-ph-section="your_part" className="fade-section bg-[#EFEFEF] px-5 py-20 md:px-10">
+          <div className="w-full">
+            <p className="type-overline tracking-[0.14em] text-[#888888]">YOUR PART</p>
+            <h2 className="type-h2 mt-4 max-w-[760px]">A PAGE SITTING QUIETLY ON THE INTERNET IS NOT A LAUNCH.</h2>
+            <p className="type-body-lg mt-6 max-w-[760px] text-[#444444]">
+              To qualify for the free angle revision, the test has to actually get tested. That means completing the
+              agreed first-user launch actions within 72 hours of delivery.
+            </p>
+            <div className="mt-8 space-y-1">
+              {[
+                'Send at least 20 DMs',
+                'Publish at least 3 posts',
+                'Share in at least 3 relevant groups, communities, or channels',
+                'Give the test 72 hours to collect responses',
+                'Send us the numbers and replies',
+              ].map((item) => (
+                <p key={item} className="type-body pb-1 text-[#303030]">
+                  <span className="mr-1">&rarr;</span>
+                  <span>{item}</span>
+                </p>
+              ))}
+            </div>
+            <p className="type-body-lg mt-8 max-w-[760px] text-[#444444]">
+              If you do the launch actions and still get nothing useful, we&apos;ll help you change the angle. Fair for
+              you. Fair for us.
+            </p>
+          </div>
+        </section>
         <section data-ph-section="social_proof" className="fade-section bg-[#EFEFEF] px-5 py-20 md:px-10">
           <div className="w-full">
-            <div className="mx-auto max-w-[640px] text-center">
+            <div className="mx-auto max-w-[760px] text-center">
               <p className="type-overline tracking-[0.14em] text-[var(--text-muted)]">WHAT HAPPENS AFTER 48 HOURS</p>
               <p className="type-body-lg mt-8 text-[#444444]" style={{ fontStyle: 'italic', fontWeight: 300, lineHeight: 1.8 }}>
-                &quot;[REAL TESTIMONIAL GOES HERE]&quot;
+                &quot;{testimonial.testimonial_quote}&quot;
               </p>
-              <span className="type-caption mt-4 block text-[var(--text-muted)]">— [Name], [Company]</span>
+              <span className="type-caption mt-4 block text-[var(--text-muted)]">
+                - {testimonial.testimonial_name}, {testimonial.testimonial_role}
+              </span>
             </div>
           </div>
         </section>
 
+        <section data-ph-section="faq" className="fade-section bg-[#EFEFEF] px-5 py-20 md:px-10">
+          <div className="w-full">
+            <h2 className="type-h2 max-w-[760px]">QUESTIONS FOUNDERS ASK BEFORE THEY STOP OVERTHINKING.</h2>
+            <div className="mt-10 grid gap-4 md:grid-cols-2">
+              {[
+                ['Do I need a finished product?', 'No. The sprint is designed for ideas before the full product exists. We can test early access, preorder interest, beta demand, call-booking, or demo requests depending on the idea.'],
+                ['What if I only have messy notes?', 'That is fine. Messy notes, voice memos, screenshots, competitor links, or a half-clear idea are enough. We turn that into a testable launch brief.'],
+                ['Does this guarantee customers?', 'No. Anyone promising guaranteed customers in 48 hours is probably selling fumes. We guarantee a live demand test, not market demand.'],
+                ['What if nobody signs up?', 'That is still useful. We look at whether people visited, clicked, replied, objected, ignored it completely, or showed interest but did not act. Then we decide whether to change the angle, audience, CTA, channel, or idea.'],
+                ['Do you run the outreach for me?', 'The core sprint gives you the launch assets and tells you where to start. Done-for-you outreach can be added separately if you want us to help execute the first-user outreach.'],
+                ['Can you build the actual MVP too?', 'Not inside this sprint. This is for testing demand before building. If the signal is strong, we can discuss the next build.'],
+                ['When does the 48-hour timer start?', 'After your intake is complete and the deposit is paid. If key details are missing, the timer has not started yet. That protects the process and keeps the deadline real.'],
+                ['What happens after the 48 hours?', 'You launch with the page, messages, and scorecard. Then you watch what real people do. If they click, sign up, reply, book, object, or ignore it, you have something to learn from. The sprint gives you the first test. The market gives you the answer.'],
+              ].map(([question, answer]) => (
+                <div key={question} className="rounded-[4px] border border-[#D7D7D1] bg-[#E8E8E3] px-5 py-6">
+                  <p className="type-body-lg font-bold text-[#1A1A1A]">{question}</p>
+                  <p className="type-body mt-3 text-[#444444]">{answer}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
         <section id={SECTION_IDS[4]} data-ph-section={SECTION_IDS[4]} className="fade-section bg-[#EFEFEF] px-5 py-20 md:px-10">
           <div className="w-full">
             <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
               <div>
                 <h2 className="type-h2">STOP PLANNING.<br/>START LAUNCHING.</h2>
-                <p className="type-body-lg mt-6 max-w-[520px] text-[#444444]">
-                  You already know what you want to build. You&apos;ve known for a while. The only thing left is to find out if it works - and the only way to find that out is to put it in front of real people. That&apos;s what this is for.
+                <p className="type-body-lg mt-6 max-w-[620px] text-[#444444]">
+                  You already know what you want to build. The only thing left is to find out if people care enough to
+                  act. In 48 hours, we can turn the idea into a live demand test and put you closer to the truth.
                 </p>
               </div>
               <div className="text-[#1A1A1A]">
@@ -773,7 +1063,7 @@ function App() {
                     <CtaArrowIcon />
                   </span>
                 </button>
-                <p className="type-body-sm mt-3 text-[#888888]">Applications take 3 minutes. We review within 24 hours.</p>
+                <p className="type-body-sm mt-3 text-[#888888]">Applications take 3 minutes. Reviewed within 24 hours.</p>
               </div>
             </div>
           </div>
@@ -956,4 +1246,9 @@ function App() {
   )
 }
 
+initPostHog()
+
 ReactDOM.createRoot(document.getElementById('root')).render(<App />)
+
+
+
