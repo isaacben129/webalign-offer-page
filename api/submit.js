@@ -97,7 +97,7 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Web Align Sprint <onboarding@resend.dev>',
+        from: 'Web Align Sprint <hello@launch.webalign.studio>',
         to: ['hello@webalign.studio'],
         subject: normalizedFormType === 'custom_web'
           ? `New Custom Web Quote Request - ${safeFullName}`
